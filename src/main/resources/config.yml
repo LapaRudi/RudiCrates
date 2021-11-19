@@ -1,0 +1,95 @@
+# RudiCrates v0.9 Config
+# 
+# Das Öffnen von Crates ist standardmäßig deaktiviert, lege zuerst die Crates fest,
+# die verwendet werden sollen im Unterpunkt 'crates'.
+#
+# 
+#                                [Beispiel]
+# crates:
+#   gold:                          - Der Name der Crate (wird für ingame Befehle verwendet).
+#     displayname: '&6Gold-Crate'  - Der Anzeigename der Crate (wird z.B. im Crate-Menü angezeigt).
+#     material: 'GOLD_BLOCK'       - Das Crate-Item das im Crate-Menü angezeigt wird.
+#     slot: 15                     - Der Slot in dem das Crate-Item angezeigt wird.
+#
+# Liste für Materialien [1.16.5] -> https://helpch.at/docs/1.16.5/org/bukkit/Material.html
+
+
+
+# Wenn mysql false ist, werden die Crates (Keys) in .yml Dateien gespeichert.
+# Die Tabelle und die Datenbank wird automatisch erstellt, wenn sie nicht vorhanden ist.
+usemysql: false
+
+mysql:
+  host: '127.0.0.1'
+  port: 3333
+  username: 'LapaRudi'
+  password: 'rudisql'
+  database: 'rudicrates'
+  
+# Wenn ein Item gezogen wird mit dieser Wahrscheinlichkeit oder weniger,
+# (gebe 0 an zum deaktivieren)
+
+# wird eine Nachricht an alle Spieler gesendet.
+broadcast: 5.0
+# für limitierte Items
+broadcastlimited: 5.0
+# wird ein Feuerwerk über dem Spieler gespawnt.
+firework: 10.0
+
+# Entfernt limitierte Items automatisch aus der Crate, wenn das Limit erreicht wurde.
+removelimiteditems: false
+
+# Inventar-Name des Crate-Menüs
+inventorytitle: 'Crate Opening ⚄'
+
+# Inventarreihen vom Crate-Menü (mindestens 1, höchstens 6)
+inventoryrows: 5
+
+# Setzt eine rote Glasscheibe in das Crate-Menü durch die dich das Menü schliessen lässt
+usecloseinventory: false
+closeinventoryslot: 45
+  
+# Item mit dem Namen 'Dein Gewinn', wird während dem öffnen einer Crate angezeigt.
+windisplayitem: 'HOPPER'
+# Das Gewinnanzeige-Item hat einen Verzauberungseffekt
+windisplayitemenchant: true
+
+# Leere Slots im Crate-Menü werden mit diesem Item aufgefüllt.
+usefillitem: true
+fillitem:
+  material: 'GRAY_STAINED_GLASS_PANE'
+  name: ''
+  enchanted: false
+  durability: 0 # <- Für 1.8.x
+  
+# Crate-Einstellungen | siehe oben für Beispiel.
+# Die Gewinne der Crates werden in .yml Dateien mit dem jeweiligen Namen der Crate gespeichert.
+# Gewinne können ingame hinzufügt werden. Mehr Infos mit dem Befehl '/rc help' ingame.
+# (Die Gewinnchancen müssen nicht 100 ergeben.)
+#
+# Nachdem die Crates eingetragen wurden muss der Server (bzw. das Plugin) neugestartet werden,
+# damit die .yml Dateien der Crates erstellt werden.
+#
+# Wenn die Gewinne hinzugefügt wurden kann 'enabled' auf true gesetzt werden,
+# um das öffnen von Crates zu aktivieren.
+
+crates:
+  holz:
+    displayname: '&eHolz Crate'
+    material: 'LOG'
+    slot: 10
+
+  eisen:
+    displayname: '&f&lEisen Crate'
+    material: 'IRON_BLOCK'
+    slot: 13
+
+  diamant:
+    displayname: '&b&oDiamant Crate'
+    material: 'DIAMOND_BLOCK'
+    slot: 16
+
+# Aktiviert / Deaktiviert das öffnen von Crates
+# sinnvoll um Fehler zu vermeiden während Items hinzugefügt werden etc.
+# (kann auch ingame über /rc toggle geändert werden)
+enabled: false

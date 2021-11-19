@@ -1,0 +1,57 @@
+name: RudiCrates
+version: '${project.version}'
+main: de.laparudi.rudicrates.RudiCrates
+api-version: 1.16
+author: LapaRudi
+description: Case Opening
+softdepend:
+  - PlugMan
+
+commands:
+  rudicrates:
+    description: Hilfe und Reload-Befehl
+    aliases: [rc, rcrates]
+  getcaseblock:
+    description: Gebe dir ein Case-Opening Block
+    aliases: getcrateblock
+  key:
+    description: Gebe/Nehme Crates von Spielern
+    aliases: cratekey
+  addtocrate:
+    description: Füge das Item in deiner Hand einer Crate hinzu
+    aliases: [addcrateitem, atc]
+  removefromcrate:
+    description: Entferne ein Item aus einer Crate
+    aliases: [removecrateitem, rfc]
+  editchance:
+    description: Ändere die Gewinnchance eines Items
+    aliases: chance
+  bindcommand:
+    description: Füge einen Befehl zu einem Crate-Item hinzu der ausgeführt wird wenn das Item gewonnen wird
+    aliases: bindcmd
+  setvirtual:
+    description: Mache ein Crate-Item virtuell
+    aliases: [setv, virtual]
+  setlimited:
+    description: Limitiere ein Item auf eine bestimmte Stückzahl
+    aliases: limited
+
+permissions: 
+  rudicrates.admin:
+    description: Zugriff auf /rc reload und /rc toggle
+  rudicrates.getcaseblock:
+    description: Zugriff auf den /getcaseblock Befehl
+  rudicrates.key:
+    description: Zugriff auf den /key Befehl
+  rudicrates.addtocrate:
+    description: Zugriff auf den /addtocrate Befehl
+  rudicrates.removefromcrate:
+    description: Zugriff auf den /removefromcrate Befehl
+  rudicrates.editchance:
+    description: Zugriff auf den /editchance Befehl
+  rudicrates.bindcommand:
+    description: Zugriff auf den /bindcommand Befehl
+  rudicrates.setvirtual:
+    description: Zugriff auf den /setvirtual Befehl
+  rudicrates.setlimited:
+    description: Zugriff auf den /setlimited Befehl
