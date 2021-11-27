@@ -5,7 +5,7 @@ RudiCrates Crate-Opening
 - Crate-Gewinne komplett ingame bearbeiten
 - Bis zu 54 Crates und endlos viele Gewinne pro Crate hinzufügen
 - Vorschau-Inventar mit endlos vielen Seiten
-- Item-Schlüssel und Virtuelle Schlüssel
+- Item-Schlüssel und virtuelle Schlüssel
 - Items limitieren und virtuell* machen
 - Befehle an Items binden
 - Itemnamen in der Gewinnnachricht werden in die Client-Sprache übersetzt
