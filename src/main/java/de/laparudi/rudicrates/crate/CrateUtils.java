@@ -120,7 +120,6 @@ public class CrateUtils extends ItemManager {
                             
                             Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> {
                                 player.playSound(player.getLocation(), RudiCrates.getPlugin().getVersionUtils().winSound(), 1.0F, 0.8F);
-                                currentlyOpening.remove(player.getUniqueId());
                                 delay = 2;
                                 this.finishAnimation(player, animationInventory);
                             }, 15);
@@ -148,6 +147,7 @@ public class CrateUtils extends ItemManager {
                 Bukkit.getScheduler().cancelTask(finishTask);
                 
                 Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> {
+                    currentlyOpening.remove(player.getUniqueId());
                     if (!player.getOpenInventory().getTopInventory().isEmpty()) {
                         RudiCrates.getPlugin().getInventoryUtils().openCrateMenu(player);
                     }
@@ -171,9 +171,10 @@ public class CrateUtils extends ItemManager {
         }
 
         final UUID uuid = player.getUniqueId();
-        final boolean noCrates = RudiCrates.getPlugin().getConfig().getBoolean("usemysql") ? SQLUtils.getCrateAmount(uuid, crate) < 1 : FileUtils.getCrateAmount(uuid, crate) < 1;
+        final boolean noVirtualCrates = RudiCrates.getPlugin().getConfig().getBoolean("usemysql") ? SQLUtils.getCrateAmount(uuid, crate) < 1 : FileUtils.getCrateAmount(uuid, crate) < 1;
+        final boolean noItemCrates = this.getKeyItemAmount(player, crate) < 1;
 
-        if (noCrates) {
+        if (noVirtualCrates && noItemCrates) {
             player.sendMessage(Messages.PREFIX + "§cDu hast keine Crate mehr übrig.");
             return;
         }
@@ -182,7 +183,7 @@ public class CrateUtils extends ItemManager {
         final Map<ItemStack, Double[]> chances = crate.getMap().get(crate.getName());
 
         if (crateConfig.getKeys(false).isEmpty()) {
-            player.sendMessage(Messages.PREFIX + "Diese Crate hat keine Gewinne.");
+            player.sendMessage(Messages.PREFIX + "§fDiese Crate hat keine Gewinne.");
 
             if (player.hasPermission("rudicrates.addtocrate")) {
                 player.sendMessage(Messages.PREFIX + "§7Benutze §f/addtocrate §7um Items hinzuzufügen.");
@@ -194,7 +195,7 @@ public class CrateUtils extends ItemManager {
             player.sendMessage(Messages.PREFIX + "§fFehlerhafte Gewinnchancen.");
             return;
         }
-        
+
         final double random = ThreadLocalRandom.current().nextDouble(0, getChancesValue(crateConfig));
         for (Map.Entry<ItemStack, Double[]> entry : chances.entrySet()) {
             Double[] doubles = entry.getValue();
@@ -212,7 +213,7 @@ public class CrateUtils extends ItemManager {
 
                 int openDelay = 0;
                 final String amount = item.getAmount() > 1 ? item.getAmount() + "x " : "";
-                
+
                 if (animation) {
                     openDelay = 215;
                     this.animation(player, crate, id);
@@ -242,12 +243,12 @@ public class CrateUtils extends ItemManager {
                             component.addExtra("§c" + player.getName() + "§a hat ");
                             component.addExtra(display);
                             component.addExtra("§a aus einer " + crate.getDisplayname() + "§a gewonnen! §fMit einer Chance von §c" + chance + "% §8(§fNoch §c" + limit + "§f verfügbar.§8)");
-                            
+
                             for (Player players : Bukkit.getOnlinePlayers()) {
                                 players.spigot().sendMessage(component);
                                 players.playSound(players.getLocation(), RudiCrates.getPlugin().getVersionUtils().pling(), 1.0F, 1.0F);
                             }
-                            
+
                         } else {
                             component.addExtra(componentPrefix());
                             component.addExtra("§aDu hast §6");
@@ -255,7 +256,7 @@ public class CrateUtils extends ItemManager {
                             component.addExtra("§a aus einer " + crate.getDisplayname() + "§a gewonnen! §fMit einer Chance von §c" + chance + "% §8(§fNoch §c" + limit + "§f verfügbar.§8)");
                             player.spigot().sendMessage(component);
                         }
-                        
+
                         if (limit < 1) {
                             if (RudiCrates.getPlugin().getConfig().getBoolean("removelimiteditems")) {
                                 crateConfig.set(String.valueOf(id), null);
@@ -272,9 +273,9 @@ public class CrateUtils extends ItemManager {
 
                         RudiCrates.getPlugin().getInventoryUtils().loadPreviewInventories();
                     }
-                    
+
                     if (chance <= RudiCrates.getPlugin().getConfig().getInt("firework")) spawnFirework(player);
-                    
+
                     if (!limited && chance <= RudiCrates.getPlugin().getConfig().getDouble("broadcast")) {
                         BaseComponent component = new TextComponent();
                         component.addExtra(componentPrefix());
@@ -292,17 +293,21 @@ public class CrateUtils extends ItemManager {
                         player.spigot().sendMessage(component);
                     }
 
-                    if (RudiCrates.getPlugin().getConfig().getBoolean("usemysql")) {
-                        SQLUtils.removeCrates(uuid, crate, 1);
-                    } else
-                        FileUtils.removeCrates(uuid, crate, 1);
-                    
-                    if(!animation) {
-                        Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () ->
-                                RudiCrates.getPlugin().getInventoryUtils().openCrateMenu(player), 2);
+                    if (!noItemCrates) {
+                        this.removeKeyItem(player, crate);
+
+                    } else {
+                        if (RudiCrates.getPlugin().getConfig().getBoolean("usemysql")) {
+                            SQLUtils.removeCrates(uuid, crate, 1);
+                        } else
+                            FileUtils.removeCrates(uuid, crate, 1);
                     }
-                    
-                    }, openDelay);
+
+                    if (!animation) {
+                        Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> RudiCrates.getPlugin().getInventoryUtils().openCrateMenu(player), 2);
+                    }
+
+                }, openDelay);
                 break;
             }
         }
@@ -347,5 +352,30 @@ public class CrateUtils extends ItemManager {
         final FileConfiguration config = YamlConfiguration.loadConfiguration(RudiCrates.getPlugin().getLocationsFile());
         final List<String> locations = config.getStringList("locations");
         return locations.contains(LocationNameUtils.toLocationString(chest.getLocation()));
+    }
+    
+    public int getKeyItemAmount(Player player, Crate crate) {
+        final ItemStack keyItem = getCrateKeyItem(crate, 1);
+        int count = 0;
+        
+        for(ItemStack item : player.getInventory().getContents()) {
+            if(item == null) continue;
+            if(item.isSimilar(keyItem)) {
+                count = count + item.getAmount();
+            }
+        }
+        
+        return count;
+    }
+    
+    public void removeKeyItem(Player player, Crate crate) {
+        if(this.getKeyItemAmount(player, crate) < 1) return;
+        for(ItemStack item : player.getInventory().getContents()) {
+            if(item == null) continue;
+            
+            if(item.isSimilar(getCrateKeyItem(crate, 1))) {
+                item.setAmount(item.getAmount() -1);
+            }
+        }
     }
 }

@@ -6,10 +6,16 @@
 # 
 #                                [Beispiel]
 # crates:
-#   gold:                          - Der Name der Crate (wird für ingame Befehle verwendet).
-#     displayname: '&6Gold-Crate'  - Der Anzeigename der Crate (wird z.B. im Crate-Menü angezeigt).
-#     material: 'GOLD_BLOCK'       - Das Crate-Item das im Crate-Menü angezeigt wird.
-#     slot: 15                     - Der Slot in dem das Crate-Item angezeigt wird.
+#   gold:                          - Der Name der Crate (wird für ingame Befehle verwendet)
+#     displayname: '&6Gold-Crate'  - Der Anzeigename der Crate (wird z.B. im Crate-Menü angezeigt)
+#     material: 'GOLD_BLOCK'       - Das Crate-Item das im Crate-Menü angezeigt wird
+#     slot: 15                     - Der Slot in dem das Crate-Item angezeigt wird
+#
+#     key:                         - Unterpunkt für das Crate-Schlüssel Item
+#       material:                  - Das Item des Schlüssels
+#       name:                      - Der Name des Schlüssels
+#       enchant:                   - Ob der Schlüssel einen Verzauberungseffekt hat (true/false)
+#       lore:                      - Die Beschreibung des Schlüssels
 #
 # Liste für Materialien [1.16.5] -> https://helpch.at/docs/1.16.5/org/bukkit/Material.html
 
@@ -74,20 +80,43 @@ fillitem:
 # um das öffnen von Crates zu aktivieren.
 
 crates:
+  
   holz:
     displayname: '&eHolz Crate'
     material: 'LOG'
     slot: 10
+    key:
+      material: 'TRIPWIRE_HOOK'
+      name: '&eHolz Crate Schlüssel'
+      enchant: false
+      lore:
+        - 'Öffnet eine Holz Crate'
 
   eisen:
     displayname: '&f&lEisen Crate'
     material: 'IRON_BLOCK'
     slot: 13
+    key:
+      material: 'TRIPWIRE_HOOK'
+      name: '&f&lEisen Crate Schlüssel'
+      enchant: true
+      lore:
+        - '&6Öffnet eine Eisen Crate'
+        - '§c- Beispiel Text'
 
   diamant:
     displayname: '&b&oDiamant Crate'
     material: 'DIAMOND_BLOCK'
     slot: 16
+    key:
+      material: 'DIAMOND'
+      name: '&bDiamant Crate Schlüssel'
+      enchant: true
+      lore:
+        - ' '
+        - '&dÖffnet eine Diamant Crate'
+        - '&aDu kannst diesen Text in der'
+        - '&cConfig &aändern oder entfernen'
 
 # Aktiviert / Deaktiviert das öffnen von Crates
 # sinnvoll um Fehler zu vermeiden während Items hinzugefügt werden etc.

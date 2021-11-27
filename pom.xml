@@ -6,7 +6,7 @@
 
     <groupId>de.laparudi</groupId>
     <artifactId>RudiCrates</artifactId>
-    <version>0.9</version>
+    <version>0.9.1</version>
     <packaging>jar</packaging>
 
     <name>RudiCrates</name>

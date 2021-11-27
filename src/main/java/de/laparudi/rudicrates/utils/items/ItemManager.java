@@ -4,9 +4,15 @@ import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.Crate;
 import de.laparudi.rudicrates.mysql.SQLUtils;
 import de.laparudi.rudicrates.utils.FileUtils;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class ItemManager {
 
@@ -26,13 +32,31 @@ public class ItemManager {
     }
     
     public final ItemStack getCrateItem(Player player, Crate crate) {
+        final int keyItemAmount = RudiCrates.getPlugin().getCrateUtils().getKeyItemAmount(player, crate);
+        
         if (RudiCrates.getPlugin().getConfig().getBoolean("usemysql")) {
-            return getCrateBase(crate.getMaterial(), crate.getDisplayname(), SQLUtils.getCrateAmount(player.getUniqueId(), crate));
+            return getCrateBase(crate.getMaterial(), crate.getDisplayname(), SQLUtils.getCrateAmount(player.getUniqueId(), crate) + keyItemAmount);
             
         } else
-            return getCrateBase(crate.getMaterial(), crate.getDisplayname(), FileUtils.getCrateAmount(player.getUniqueId(), crate));
+            return getCrateBase(crate.getMaterial(), crate.getDisplayname(), FileUtils.getCrateAmount(player.getUniqueId(), crate) + keyItemAmount);
+    }
+    
+    public final ItemStack getCrateKeyItem(Crate crate, int amount) {
+        final String crateName = crate.getName();
+        final ConfigurationSection section = RudiCrates.getPlugin().getConfig().getConfigurationSection("crates." + crateName + ".key");
+        if(section == null) return null;
+        
+        return new ItemBuilder(Material.getMaterial(Objects.requireNonNull(section.getString("material")).toUpperCase()))
+                .setName(ChatColor.translateAlternateColorCodes('&', Objects.requireNonNull(section.getString("name"))))
+                .setLore(translateChatColor(section.getStringList("lore"))).setAmount(amount).invisibleEnchant(section.getBoolean("enchant")).toItem();
     }
     
     public final ItemStack crateBlock = new ItemBuilder(Material.CHEST).setName("§4§lC§c§lr§6§la§e§lte §6§lO§c§lp§4§le§c§ln§6§li§e§lng")
                 .setLore("§7» §2Platziert ein Crate-Opening", "§7» §2Kann wieder abgebaut werden.").toItem();
+    
+    private List<String> translateChatColor(List<String> list) {
+        List<String> newList = new ArrayList<>();
+        list.forEach(string -> newList.add(ChatColor.translateAlternateColorCodes('&', string)));
+        return newList;
+    }
 }

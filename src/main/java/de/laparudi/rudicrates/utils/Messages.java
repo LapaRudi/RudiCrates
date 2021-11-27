@@ -1,11 +1,25 @@
 package de.laparudi.rudicrates.utils;
 
+import de.laparudi.rudicrates.RudiCrates;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 
 public enum Messages {
     
     PREFIX {
+        @Override
+        public String toString() {
+            final String version = Bukkit.getBukkitVersion();
+            if (version.contains("1.16") || version.contains("1.17")) {
+                return RudiCrates.getPlugin().getTranslationUtils().hexColorString(
+                        new String[] { "#4F4F4F", "#981f00", "#a32201", "#ae2601", "#b92a01", "#c52d02", "#d03102", "#dc3503", "#e73803", "#f33c03", "#ff4004", "#4F4F4F" },
+                        new Character[] { '[', 'R', 'u', 'd', 'i', 'C', 'r', 'a', 't', 'e', 's', ']', ' ' } );
+            }
+            return "§7[§cRudiCrates§7] §r";
+        }
+    },
+   
+    PREFIX_OLD {
         @Override
         public String toString() {
             final String version = Bukkit.getBukkitVersion();
@@ -30,7 +44,7 @@ public enum Messages {
     UNKNOWN_CRATE {
         @Override
         public String toString() {
-            return PREFIX + "§fUnbekannte Crate.";
+            return PREFIX + "§fUnbekannte Crate. (Achte auf Groß- und Kleinschreibung)";
         }
     },
 

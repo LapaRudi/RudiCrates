@@ -32,6 +32,9 @@ public class CrateBreakListener extends ItemManager implements Listener {
         locations.set("locations", list);
         locations.save(RudiCrates.getPlugin().getLocationsFile());
         
+        event.setCancelled(true);
+        event.getBlock().setType(Material.AIR);
+        
         if(player.getGameMode() != GameMode.CREATIVE) {
             event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), crateBlock);
         }

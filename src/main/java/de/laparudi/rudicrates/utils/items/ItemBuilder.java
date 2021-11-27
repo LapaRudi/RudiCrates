@@ -29,7 +29,20 @@ public class ItemBuilder {
         item.setItemMeta(meta);
         return this;
     }
+    
+    public ItemBuilder setAmount(int amount) {
+        item.setAmount(amount);
+        return this;
+    }
 
+    public ItemBuilder setLore(List<String> lore) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return this;
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return this;
+    }
+    
     public ItemBuilder setLore(String... lore) {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return this;
