@@ -27,9 +27,9 @@ usemysql: false
 
 mysql:
   host: '127.0.0.1'
-  port: 3333
-  username: 'LapaRudi'
-  password: 'rudisql'
+  port: 3306
+  username: 'Name'
+  password: 'password'
   database: 'rudicrates'
   
 # Wenn ein Item gezogen wird mit dieser Wahrscheinlichkeit oder weniger,
