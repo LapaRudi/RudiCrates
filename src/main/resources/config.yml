@@ -51,7 +51,7 @@ inventorytitle: 'Crate Opening ⚄'
 # Inventarreihen vom Crate-Menü (mindestens 1, höchstens 6)
 inventoryrows: 5
 
-# Setzt eine rote Glasscheibe in das Crate-Menü durch die dich das Menü schliessen lässt
+# Setzt eine rote Glasscheibe in das Crate-Menü durch die sich das Menü schliessen lässt.
 usecloseinventory: false
 closeinventoryslot: 45
   
@@ -66,7 +66,7 @@ fillitem:
   material: 'GRAY_STAINED_GLASS_PANE'
   name: ''
   enchanted: false
-  durability: 0 # <- Für 1.8.x
+  durability: 0 # <- Für 1.8.x (Funktioniert noch nicht)
   
 # Crate-Einstellungen | siehe oben für Beispiel.
 # Die Gewinne der Crates werden in .yml Dateien mit dem jeweiligen Namen der Crate gespeichert.
