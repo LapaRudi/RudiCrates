@@ -13,7 +13,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class CrateInventoryCloseListener implements Listener {
-
+    
     @EventHandler
     public void onCrateInventoryClose(final InventoryCloseEvent event) {
         final Player player = (Player) event.getPlayer();
@@ -22,7 +22,7 @@ public class CrateInventoryCloseListener implements Listener {
         final String title = ChatColor.translateAlternateColorCodes('&',
                 Objects.requireNonNull(RudiCrates.getPlugin().getConfig().getString("inventorytitle")));
         
-        if (!view.equals(title) && !view.contains("→ Gewinne") && !view.contains("wird geöffnet...")) return;
+        if (!view.equals(title) && !view.contains(RudiCrates.getPlugin().getLanguage().preview) && !view.contains(RudiCrates.getPlugin().getLanguage().opening)) return;
         if (!RudiCrates.getPlugin().getCrateUtils().isCrateOpeningInventory(player) && !CrateUtils.inCrateMenu.containsKey(uuid)) return;
         
         Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> {

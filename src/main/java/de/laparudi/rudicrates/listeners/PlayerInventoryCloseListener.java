@@ -10,7 +10,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 
 public class PlayerInventoryCloseListener implements Listener {
-
+    
     @EventHandler
     public void onInventoryClose(final InventoryCloseEvent event) {
         final Player player = (Player) event.getPlayer();

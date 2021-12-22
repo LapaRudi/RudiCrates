@@ -1,124 +1,117 @@
-# RudiCrates v0.9 Config
+# RudiCrates v0.9.2 Config
 # 
-# Das Öffnen von Crates ist standardmäßig deaktiviert, lege zuerst die Crates fest,
-# die verwendet werden sollen im Unterpunkt 'crates'.
+# The opening of crates is disabled by default, set the crates you want to use
+# in the 'crates:' section first.
 #
 # 
-#                                [Beispiel]
+#                                [Example]
 # crates:
-#   gold:                          - Der Name der Crate (wird für ingame Befehle verwendet)
-#     displayname: '&6Gold-Crate'  - Der Anzeigename der Crate (wird z.B. im Crate-Menü angezeigt)
-#     material: 'GOLD_BLOCK'       - Das Crate-Item das im Crate-Menü angezeigt wird
-#     slot: 15                     - Der Slot in dem das Crate-Item angezeigt wird
+#   gold:                          - The crate-name (used for ingame commands)
+#     displayname: '&6Gold-Crate'  - The crate-displayname der Crate (shown in the crate-menu)
+#     material: 'GOLD_BLOCK'       - The material of the crate-item in the crate menu
+#     slot: 15                     - The slot of the crate-item
 #
-#     key:                         - Unterpunkt für das Crate-Schlüssel Item
-#       material:                  - Das Item des Schlüssels
-#       name:                      - Der Name des Schlüssels
-#       enchant:                   - Ob der Schlüssel einen Verzauberungseffekt hat (true/false)
-#       lore:                      - Die Beschreibung des Schlüssels
+#     key:                         - Section for not-virtual keys
+#       material:                  - Material of the key
+#       name:                      - Name of the key
+#       enchant:                   - Visual enchantment (true/false)
+#       lore:                      - Lore of the key
 #
 # Liste für Materialien [1.16.5] -> https://helpch.at/docs/1.16.5/org/bukkit/Material.html
 
 
-
-# Wenn mysql false ist, werden die Crates (Keys) in .yml Dateien gespeichert.
-# Die Tabelle und die Datenbank wird automatisch erstellt, wenn sie nicht vorhanden ist.
+# When 'usemysql' is false, the crates (keys) will be saved in .yml files.
+# Die table and the database will be created if they not exist.
 usemysql: false
 
 mysql:
   host: '127.0.0.1'
   port: 3306
-  username: 'Name'
+  username: 'name'
   password: 'password'
   database: 'rudicrates'
   
-# Wenn ein Item gezogen wird mit dieser Wahrscheinlichkeit oder weniger,
-# (gebe 0 an zum deaktivieren)
-
-# wird eine Nachricht an alle Spieler gesendet.
+# A message will be sent to all players, when an item gets pulled with this chance or less.
 broadcast: 5.0
-# für limitierte Items
+# for limited items
 broadcastlimited: 5.0
-# wird ein Feuerwerk über dem Spieler gespawnt.
+# # A firework will be spawned above the player, when an item gets pulled with this chance or less.
 firework: 10.0
 
-# Entfernt limitierte Items automatisch aus der Crate, wenn das Limit erreicht wurde.
+# Removes limited items automaticly from the crate, when the limitation is reached.
 removelimiteditems: false
 
-# Inventar-Name des Crate-Menüs
+# Inventory name of the crate-menü
 inventorytitle: 'Crate Opening ⚄'
 
-# Inventarreihen vom Crate-Menü (mindestens 1, höchstens 6)
+# Inventory rows (1-6)
 inventoryrows: 5
 
-# Setzt eine rote Glasscheibe in das Crate-Menü durch die sich das Menü schliessen lässt.
+# Puts a red glass pane into the crate-menu to close it
 usecloseinventory: false
 closeinventoryslot: 45
   
-# Item mit dem Namen 'Dein Gewinn', wird während dem öffnen einer Crate angezeigt.
+# Will be displayed while a crate is beeing opened
 windisplayitem: 'HOPPER'
-# Das Gewinnanzeige-Item hat einen Verzauberungseffekt
+windisplayname: '§c↓ §6Your win §c↓'
 windisplayitemenchant: true
 
-# Leere Slots im Crate-Menü werden mit diesem Item aufgefüllt.
+# Empty slots in the crate-menu will be filled by with this item
 usefillitem: true
 fillitem:
   material: 'GRAY_STAINED_GLASS_PANE'
   name: ''
   enchanted: false
-  durability: 0 # <- Für 1.8.x (Funktioniert noch nicht)
+  durability: 0 # <- For 1.8.8 + 1.12.2
   
-# Crate-Einstellungen | siehe oben für Beispiel.
-# Die Gewinne der Crates werden in .yml Dateien mit dem jeweiligen Namen der Crate gespeichert.
-# Gewinne können ingame hinzufügt werden. Mehr Infos mit dem Befehl '/rc help' ingame.
-# (Die Gewinnchancen müssen nicht 100 ergeben.)
+# Crate settings
+# The wins of the crates will be saved in .yml files with the name of the crate.
+# Wins can be added ingame. More information with the command '/rc help'.
+# (The win chances do not have to add up to 100)
 #
-# Nachdem die Crates eingetragen wurden muss der Server (bzw. das Plugin) neugestartet werden,
-# damit die .yml Dateien der Crates erstellt werden.
-#
-# Wenn die Gewinne hinzugefügt wurden kann 'enabled' auf true gesetzt werden,
-# um das öffnen von Crates zu aktivieren.
+# Restart the plugin after you added the crates. RudiCrates will create the .yml files for the crates.
+# When you added items to your crates (ingame with /addtocrate), set 'enabled' to true.
 
 crates:
   
-  holz:
-    displayname: '&eHolz Crate'
+  wood:
+    displayname: '&eWood Crate'
     material: 'LOG'
-    slot: 10
+    slot: 11
     key:
       material: 'TRIPWIRE_HOOK'
-      name: '&eHolz Crate Schlüssel'
+      name: '&eWood-Crate Key'
       enchant: false
       lore:
-        - 'Öffnet eine Holz Crate'
+        - '§6Opens a wood crate'
 
-  eisen:
-    displayname: '&f&lEisen Crate'
+  iron:
+    displayname: '&f&lIron Crate'
     material: 'IRON_BLOCK'
-    slot: 13
+    slot: 14
     key:
       material: 'TRIPWIRE_HOOK'
-      name: '&f&lEisen Crate Schlüssel'
+      name: '&f&lIron-Crate Key'
       enchant: true
       lore:
-        - '&6Öffnet eine Eisen Crate'
-        - '§c- Beispiel Text'
+        - '&6Opens an iron crate'
+        - '§c- Example Test'
 
-  diamant:
-    displayname: '&b&oDiamant Crate'
+  diamond:
+    displayname: '&b&oDiamond Crate'
     material: 'DIAMOND_BLOCK'
-    slot: 16
+    slot: 17
     key:
       material: 'DIAMOND'
-      name: '&bDiamant Crate Schlüssel'
+      name: '&bDiamond Key'
       enchant: true
       lore:
         - ' '
-        - '&dÖffnet eine Diamant Crate'
-        - '&aDu kannst diesen Text in der'
-        - '&cConfig &aändern oder entfernen'
+        - '&dOpens a diamond crate'
+        - '&aYou can change or remove this text'
+        - '&cin the config.'
 
-# Aktiviert / Deaktiviert das öffnen von Crates
-# sinnvoll um Fehler zu vermeiden während Items hinzugefügt werden etc.
-# (kann auch ingame über /rc toggle geändert werden)
+# Enables / Disables the opening of crates
+# useful to avoid errors while adding items etc.
+# (can also be changed ingame via /rc toggle) *currently disabled
 enabled: false

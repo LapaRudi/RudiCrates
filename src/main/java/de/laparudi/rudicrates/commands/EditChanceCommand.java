@@ -1,8 +1,7 @@
 package de.laparudi.rudicrates.commands;
 
+import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.Crate;
-import de.laparudi.rudicrates.crate.CrateUtils;
-import de.laparudi.rudicrates.utils.Messages;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,16 +18,16 @@ import java.util.Collections;
 import java.util.List;
 
 public class EditChanceCommand implements CommandExecutor, TabCompleter {
-
+    
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
         if (!sender.hasPermission("rudicrates.editchance")) {
-            sender.sendMessage(Messages.NO_PERMISSION.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().noPermission);
             return true;
         }
 
         if (args.length == 0) {
-            sender.sendMessage(Messages.SYNTAX_EDITCHANCE.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().editChanceSyntax);
 
         } else if (args.length == 3) {
             Crate crate;
@@ -37,27 +36,27 @@ public class EditChanceCommand implements CommandExecutor, TabCompleter {
             try {
                 crate = Crate.getByName(args[0]);
             } catch (NullPointerException e) {
-                sender.sendMessage(Messages.UNKNOWN_CRATE.toString());
+                sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownCrate);
                 return true;
             }
 
             try {
                 chance = Double.parseDouble(args[2].replace(',', '.'));
             } catch (NumberFormatException e) {
-                sender.sendMessage(Messages.NO_NUMBER.toString());
+                sender.sendMessage(RudiCrates.getPlugin().getLanguage().noNumber);
                 return true;
             }
 
             final FileConfiguration crateConfig = YamlConfiguration.loadConfiguration(crate.getFile());
             if (!crateConfig.getKeys(false).contains(args[1])) {
-                sender.sendMessage(Messages.UNKNOWN_ID.toString());
+                sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownID);
                 return true;
             }
 
             crateConfig.set(args[1] + ".chance", chance);
             try {
                 crateConfig.save(crate.getFile());
-                sender.sendMessage(Messages.PREFIX + "§7Gewinnchance von Item §f" + args[1] + " §7aus Crate §f" + crate.getName() + " §7zu §f" + chance + "% §7geändert.");
+                sender.sendMessage(RudiCrates.getPlugin().getLanguage().editChanceDone.replace("%crate%", crate.getName()).replace("%id%", args[1]).replace("%chance%", String.valueOf(chance)));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -67,10 +66,10 @@ public class EditChanceCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if (!sender.hasPermission("rudicrates.editchance")) return null;
+        if (!sender.hasPermission("rudicrates.editchance")) return Collections.emptyList();
         final List<String> complete = new ArrayList<>();
         final List<String> crateArgs = new ArrayList<>();
-        Arrays.stream(CrateUtils.getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
+        Arrays.stream(RudiCrates.getPlugin().getCrateUtils().getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
 
         if (args.length == 1) {
             StringUtil.copyPartialMatches(args[0], crateArgs, complete);

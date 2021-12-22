@@ -2,7 +2,7 @@ package de.laparudi.rudicrates.commands;
 
 import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.Crate;
-import de.laparudi.rudicrates.utils.Messages;
+import de.laparudi.rudicrates.language.Language;
 import de.laparudi.rudicrates.utils.version.VersionUtils;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.command.Command;
@@ -12,7 +12,6 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.util.StringUtil;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,25 +20,27 @@ import java.util.List;
 public class RudiCratesCommand implements CommandExecutor, TabCompleter {
     
     private final VersionUtils versionUtils = RudiCrates.getPlugin().getVersionUtils();
-    private final ComponentBuilder addToCrateComponent = versionUtils.component("/addtocrate §7<§fCrate§7> <§fGewinnchance in %§7>", "/addtocrate", "Fügt das Item in deiner Hand der angegebenen Crate mit der angegebenen Gewinnchance hinzu.");
-    private final ComponentBuilder bindCommandComponent = versionUtils.component("/bindcommand §7<§fCrate§7> <§fItem-ID§7> <§fBefehl§7>", "/bindcommand", "Fügt einen Befehl hinzu, der ausgeführt wird, wenn das angegebene Item gewonnen wird.");
-    private final ComponentBuilder editChanceComponent = versionUtils.component("/editchance §7<§fCrate§7> <§fItem-ID§7> <§fNeue Chance in %§7>", "/editchance", "Ändert die Gewinnchance des angegebenen Items.");
-    private final ComponentBuilder getCaseBlockComponent = versionUtils.component("/getcaseblock", "/getcaseblock", "Legt dir ein Crate-Opening-Block ins Inventar.");
-    private final ComponentBuilder keyComponent = versionUtils.component("/key §7<§fadd§7/§fset§7/§fremove§7/§freset§7/§finfo§7> <§fSpieler§7> [§fCrate§7] [§fMenge§7]", "/key", "Ändert die Key (Crate) Anzahl des angegebenen Spielers.");
-    private final ComponentBuilder removeFromCrateComponent = versionUtils.component("/removefromcrate §7<§fCrate§7> <§fItem-ID§7>", "/removefromcrate", "Entfernt das angegebene Item aus der angegebenen Crate.");
-    private final ComponentBuilder rudiCratesComponent = versionUtils.component("/rudicrates §7[§freload§7/§ftoggle§7]", "/rudicrates", "Zeigt eine Hilfe an, lädt die Gewinne und Config neu oder deaktiviert das öffnen von Crates.");
-    private final ComponentBuilder setLimitedComponent = versionUtils.component("/setlimited §7<§fCrate§7> <§fItem-ID§7> <§fMenge§7>", "/setlimited", "Limitiert das angegebene Item auf die angegebene Stückzahl.");
-    private final ComponentBuilder setVirtualComponent = versionUtils.component("/setvirtual §7<§fCrate§7> <§fItem-ID§7> <§ftrue§7/§ffalse§7>", "/setvirtual", "Macht das angegebene Item virtuell. [Wenn das Item gewonnen wird bekommt man es nicht ins Inventar und es wird nur der Befehl ausgeführt.]");
+    private final Language language = RudiCrates.getPlugin().getLanguage();
+    
+    private final ComponentBuilder addToCrateComponent = versionUtils.component(language.getValue("addtocrate_syntax", false), "/addtocrate", language.descriptionAddToCrate);
+    private final ComponentBuilder bindCommandComponent = versionUtils.component(language.getValue("bindcommand_syntax", false), "/bindcommand", language.descriptionBindCommand);
+    private final ComponentBuilder editChanceComponent = versionUtils.component(language.getValue("editchance_syntax", false), "/editchance", language.descriptionEditChance);
+    private final ComponentBuilder getCaseBlockComponent = versionUtils.component("/getcaseblock", "/getcaseblock", language.descriptionGetCrateBlock);
+    private final ComponentBuilder keyComponent = versionUtils.component(language.getValue("key_syntax", false), "/key", language.descriptionKey);
+    private final ComponentBuilder removeFromCrateComponent = versionUtils.component(language.getValue("removefromcrate_syntax", false), "/removefromcrate", language.descriptionRemoveFromCrate);
+    private final ComponentBuilder rudiCratesComponent = versionUtils.component(language.getValue("rudicrates_syntax", false), "/rudicrates", language.descriptionRudiCrates);
+    private final ComponentBuilder setLimitedComponent = versionUtils.component(language.getValue("setlimited_syntax", false), "/setlimited", language.descriptionSetLimited);
+    private final ComponentBuilder setVirtualComponent = versionUtils.component(language.getValue("setvirtual_syntax", false), "/setvirtual", language.descriptionSetVirtual);
 
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if(!sender.hasPermission("rudicrates.admin")) {
-            sender.sendMessage(Messages.PREFIX + "§fv" + RudiCrates.getPlugin().getDescription().getVersion() + "§7 von LapaRudi");
+        if(!sender.hasPermission("rudicrates.reload")) {
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().prefix + "§fv" + RudiCrates.getPlugin().getDescription().getVersion() + "§7 by LapaRudi");
             return true;
         }
         
         if(args.length == 0) {
-            sender.sendMessage(Messages.PREFIX + "§bRudiCrates v" + RudiCrates.getPlugin().getDescription().getVersion() + "§7 -§f Hilfe");
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().prefix + "§6v" + RudiCrates.getPlugin().getDescription().getVersion() + "§c ↓");
             sender.sendMessage(" ");
             sender.spigot().sendMessage(addToCrateComponent.create());
             sender.spigot().sendMessage(bindCommandComponent.create());
@@ -51,23 +52,31 @@ public class RudiCratesCommand implements CommandExecutor, TabCompleter {
             sender.spigot().sendMessage(setLimitedComponent.create());
             sender.spigot().sendMessage(setVirtualComponent.create());
             sender.sendMessage(" ");
-            sender.sendMessage(Messages.PREFIX + "§bRudiCrates v" + RudiCrates.getPlugin().getDescription().getVersion() + "§7 -§f Hilfe");
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().prefix + "§6v" + RudiCrates.getPlugin().getDescription().getVersion() + "§c ↑");
         
         } else if(args.length == 1) {
             if(args[0].equalsIgnoreCase("reload")) {
                 RudiCrates.getPlugin().getInventoryUtils().setupCrateMenu();
                 RudiCrates.getPlugin().getInventoryUtils().loadPreviewInventories();
+                RudiCrates.getPlugin().reloadLanguage();
+                RudiCrates.getPlugin().reloadConfig();
                 Crate.reloadCrateMaps();
-                sender.sendMessage(Messages.PREFIX + "§fConfig und Gewinne wurden neu geladen.");
+                
+                sender.sendMessage(RudiCrates.getPlugin().getLanguage().reloadAll);
                 
             } else if(args[0].equalsIgnoreCase("toggle")) {
+                sender.sendMessage(RudiCrates.getPlugin().getLanguage().prefix + "§cThis feature is currently disabled.");
+                return true;
+                
+                /*
+                
                 if (RudiCrates.getPlugin().getConfig().getBoolean("enabled")) {
                     RudiCrates.getPlugin().getConfig().set("enabled", false);
-                    sender.sendMessage(Messages.PREFIX + "§7Das öffnen von Crates wurde §fdeaktiviert§7.");
+                    sender.sendMessage(RudiCrates.getPlugin().getLanguage().rudiCratesDisabled);
 
                 } else {
                     RudiCrates.getPlugin().getConfig().set("enabled", true);
-                    sender.sendMessage(Messages.PREFIX + "§7Das öffnen von Crates wurde §faktiviert§7.");
+                    sender.sendMessage(RudiCrates.getPlugin().getLanguage().rudiCratesEnabled);
                 }
 
                 try {
@@ -76,19 +85,44 @@ public class RudiCratesCommand implements CommandExecutor, TabCompleter {
                     e.printStackTrace();
                 }
                 
+                 */
+                
             } else
-                sender.sendMessage(Messages.PREFIX + "§7Benutze §f/rudicrates §7[§freload§7/§ftoggle§7]");
+                sender.sendMessage(RudiCrates.getPlugin().getLanguage().rudiCratesSyntax);
+            
+        } else if(args.length == 2) {
+            switch (args[1].toLowerCase()) {
+                case "config":
+                    RudiCrates.getPlugin().reloadConfig();
+                    RudiCrates.getPlugin().getInventoryUtils().setupCrateMenu();
+                    sender.sendMessage(RudiCrates.getPlugin().getLanguage().reloadConfig);
+                    break;
+                    
+                case "messages":
+                    RudiCrates.getPlugin().reloadLanguage();
+                    sender.sendMessage(RudiCrates.getPlugin().getLanguage().reloadMessages);
+                    break;
+                    
+                case "preview":
+                    RudiCrates.getPlugin().getInventoryUtils().loadPreviewInventories();
+                    sender.sendMessage(RudiCrates.getPlugin().getLanguage().reloadPreview);
+                    break;
+            }
         }
         return true;
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if(!sender.hasPermission("rudicrates.admin")) return null;
+        if(!sender.hasPermission("rudicrates.reload")) return Collections.emptyList();
         final List<String> complete = new ArrayList<>();
         
         if(args.length == 1) {
             StringUtil.copyPartialMatches(args[0], Arrays.asList("reload", "toggle"), complete);
+            return complete;
+            
+        } else if(args.length == 2) {
+            StringUtil.copyPartialMatches(args[1], Arrays.asList("config", "messages", "preview"), complete);
             return complete;
         }
         

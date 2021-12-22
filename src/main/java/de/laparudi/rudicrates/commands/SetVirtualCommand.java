@@ -1,8 +1,7 @@
 package de.laparudi.rudicrates.commands;
 
+import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.Crate;
-import de.laparudi.rudicrates.crate.CrateUtils;
-import de.laparudi.rudicrates.utils.Messages;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,16 +18,16 @@ import java.util.Collections;
 import java.util.List;
 
 public class SetVirtualCommand implements CommandExecutor, TabCompleter {
-
+    
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
         if(!sender.hasPermission("rudicrates.setvirtual")) {
-            sender.sendMessage(Messages.NO_PERMISSION.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().noPermission);
             return true;
         }
         
-        if(args.length != 3) {
-            sender.sendMessage(Messages.SYNTAX_SETVIRTUAL.toString());
+        if ((args.length != 3) || (!args[2].equalsIgnoreCase("true") && !args[2].equalsIgnoreCase("false"))) {
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().setVirtualSyntax);
             return true;
         }
         
@@ -37,27 +36,22 @@ public class SetVirtualCommand implements CommandExecutor, TabCompleter {
         try {
             crate = Crate.getByName(args[0]);
         } catch (NullPointerException e) {
-            sender.sendMessage(Messages.UNKNOWN_CRATE.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownCrate);
             return true;
         }
         
         final FileConfiguration config = YamlConfiguration.loadConfiguration(crate.getFile());
         
         if(!config.contains(args[1])) {
-            sender.sendMessage(Messages.UNKNOWN_ID.toString());
-            return true;
-        }
-        
-        if(!args[2].equalsIgnoreCase("true") && !args[2].equalsIgnoreCase("false")) {
-            sender.sendMessage(Messages.SYNTAX_SETVIRTUAL.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownID);
             return true;
         }
         
         config.set(args[1] + ".virtual", Boolean.valueOf(args[2]));
-        sender.sendMessage(Messages.PREFIX + "§7Virtuell wurde für das Item §f" + args[1] + "§7 aus der Crate §f" + crate.getName() + "§7 auf §f" + args[2].toLowerCase() + "§7 gesetzt.");
+        sender.sendMessage(RudiCrates.getPlugin().getLanguage().setVirtualDone.replace("%id%", args[1]).replace("%crate%", crate.getName()).replace("%value%", args[2].toLowerCase()));
         
         if(Boolean.parseBoolean(args[2]) && config.getString(args[1] + ".command") == null) {
-            sender.sendMessage(Messages.PREFIX + "§fAchtung: §7Ohne einen festgelegten Befehl bekommt der Spieler keinen Gewinn. Füge einen mit §f/bindcommand §7hinzu.");
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().setVirtualWarning);
         }
         
         try {
@@ -71,10 +65,10 @@ public class SetVirtualCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if(!sender.hasPermission("rudicrates.setvirtual")) return null;
+        if(!sender.hasPermission("rudicrates.setvirtual")) return Collections.emptyList();
         final List<String> complete = new ArrayList<>();
         final List<String> crateArgs = new ArrayList<>();
-        Arrays.stream(CrateUtils.getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
+        Arrays.stream(RudiCrates.getPlugin().getCrateUtils().getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
 
         if(args.length == 1) {
             StringUtil.copyPartialMatches(args[0], crateArgs, complete);

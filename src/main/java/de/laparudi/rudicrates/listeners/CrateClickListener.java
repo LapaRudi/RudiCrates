@@ -17,7 +17,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import java.util.List;
 
 public class CrateClickListener implements Listener {
-
+    
     @EventHandler
     public void onCrateClick(final PlayerInteractEvent event) {
         if(event.getAction() != Action.RIGHT_CLICK_BLOCK) return;

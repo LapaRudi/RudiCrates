@@ -15,5 +15,4 @@ public class LocationNameUtils {
         if(Bukkit.getWorld(location[0]) == null) throw new NullPointerException("World '" + location[0] + "' not found");
         return new Location(Bukkit.getWorld(location[0]), Double.parseDouble(location[1]), Double.parseDouble(location[2]), Double.parseDouble(location[3]));
     }
-
 }

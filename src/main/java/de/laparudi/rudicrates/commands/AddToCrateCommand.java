@@ -2,8 +2,6 @@ package de.laparudi.rudicrates.commands;
 
 import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.Crate;
-import de.laparudi.rudicrates.crate.CrateUtils;
-import de.laparudi.rudicrates.utils.Messages;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -24,12 +22,12 @@ public class AddToCrateCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
         if(!(sender.hasPermission("rudicrates.addtocrate")) || !(sender instanceof Player)) {
-            sender.sendMessage(Messages.NO_PERMISSION.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().noPermission);
             return true;
         }
         
         if(args.length != 2) {
-            sender.sendMessage(Messages.SYNTAX_ADDTOCRATE.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().addToCrateSyntax);
             return true;
         }
         
@@ -41,27 +39,26 @@ public class AddToCrateCommand implements CommandExecutor, TabCompleter {
         try {
             crate = Crate.getByName(args[0]);
         } catch (NullPointerException e) {
-            player.sendMessage(Messages.UNKNOWN_CRATE.toString());
+            player.sendMessage(RudiCrates.getPlugin().getLanguage().unknownCrate);
             return true;
         }
         
         if(item.getType() == Material.AIR) {
-            player.sendMessage(Messages.PREFIX + "§7Du musst ein Item in der Hand halten.");
+            player.sendMessage(RudiCrates.getPlugin().getLanguage().noItemInHand);
             return true;
         }
         
         try {
             chance = Double.parseDouble(args[1].replace(',', '.'));
         } catch (NumberFormatException e) {
-            player.sendMessage(Messages.NO_NUMBER.toString());
+            player.sendMessage(RudiCrates.getPlugin().getLanguage().noNumber);
             return true;
         }
 
         final FileConfiguration config = YamlConfiguration.loadConfiguration(crate.getFile());
         for(String key : config.getKeys(false)) {
             if(Objects.requireNonNull(config.getItemStack(key + ".item")).isSimilar(item)) {
-                player.sendMessage(Messages.PREFIX + "§7Dieses Item ist bereits in der Crate.");
-                player.sendMessage(Messages.PREFIX + "§7Um die Gewinnchance zu ändern benutze §f/editchance");
+                player.sendMessage(RudiCrates.getPlugin().getLanguage().itemAlreadyInCrate);
                 return true;
             }
         }
@@ -77,7 +74,7 @@ public class AddToCrateCommand implements CommandExecutor, TabCompleter {
         
         try {
             config.save(crate.getFile());
-            player.sendMessage(Messages.PREFIX + "§7Item wurde mit einer Chance von §f" + chance + "% §7zur Crate §f" + crate.getName() + "§7 hinzugefügt.");
+            player.sendMessage(RudiCrates.getPlugin().getLanguage().addToCrateDone.replace("%crate%", crate.getName()).replace("%chance%", String.valueOf(chance)));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -87,10 +84,10 @@ public class AddToCrateCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if (!sender.hasPermission("rudicrates.addtocrate")) return null;
+        if (!sender.hasPermission("rudicrates.addtocrate")) return Collections.emptyList();
         final List<String> complete = new ArrayList<>();
         final List<String> crateArgs = new ArrayList<>();
-        Arrays.stream(CrateUtils.getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
+        Arrays.stream(RudiCrates.getPlugin().getCrateUtils().getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
 
         if (args.length == 1) {
             StringUtil.copyPartialMatches(args[0], crateArgs, complete);

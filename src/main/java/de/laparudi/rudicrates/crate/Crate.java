@@ -1,7 +1,6 @@
 package de.laparudi.rudicrates.crate;
 
 import de.laparudi.rudicrates.RudiCrates;
-import de.laparudi.rudicrates.utils.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -16,7 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class Crate {
-
+    
     private final String name, displayname;
     private final Material material;
     private final File file;
@@ -55,7 +54,7 @@ public class Crate {
                     amount = amount + count;
 
                 } catch (NumberFormatException e) {
-                    Bukkit.getConsoleSender().sendMessage(Messages.PREFIX + "§fFehlerhafte Gewinnchance für Item " + key + " aus " + name + " Crate");
+                    Bukkit.getConsoleSender().sendMessage("§8[§cRudiCrates§8] §fIncorrect win chance for item " + key + " from " + name + " Crate");
                 }
             }
             map.put(name, crateMap);
@@ -64,7 +63,7 @@ public class Crate {
 
     public static Crate getByName(String name) {
         if(!RudiCrates.getPlugin().getConfig().contains("crates." + name)) {
-            throw new NullPointerException("Crate not found");
+            throw new NullPointerException("Crate '" + name + "' not found");
         }
         
         final FileConfiguration config = RudiCrates.getPlugin().getConfig();
@@ -74,7 +73,7 @@ public class Crate {
     }
     
     public static void reloadCrateMaps() {
-        for(Crate crate : CrateUtils.getCrates()) {
+        for(Crate crate : RudiCrates.getPlugin().getCrateUtils().getCrates()) {
             final FileConfiguration crateConfig = YamlConfiguration.loadConfiguration(crate.getFile());
             double count;
             double amount = 0;
@@ -89,7 +88,7 @@ public class Crate {
                     amount = amount + count;
 
                 } catch (NumberFormatException e) {
-                    Bukkit.getConsoleSender().sendMessage(Messages.PREFIX + "§fFehlerhafte Gewinnchance für Item " + key + " aus " + crate.getName() + " Crate");
+                    Bukkit.getConsoleSender().sendMessage("§8[§cRudiCrates§8] §fIncorrect win chance for item " + key + " from " + crate.getName() + " Crate");
                 }
             }
             map.put(crate.getName(), crate.getCrateMap());

@@ -2,9 +2,7 @@ package de.laparudi.rudicrates.utils;
 
 import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.Crate;
-import de.laparudi.rudicrates.crate.CrateUtils;
 import de.laparudi.rudicrates.utils.items.ItemBuilder;
-import de.laparudi.rudicrates.utils.items.ItemManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -16,8 +14,8 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
-public class PreviewInventoryUtils extends ItemManager {
-
+public class PreviewInventoryUtils {
+    
     public static Map<String, List<Inventory>> cratePreviewInventoriesMap = new HashMap<>();
     private Inventory menuInventory;
     
@@ -38,14 +36,14 @@ public class PreviewInventoryUtils extends ItemManager {
         for(Inventory inventory : inventories) {
             for(int i = 0; i < inventory.getSize(); i++) {
                 if(inventory.getItem(i) == null) {
-                    inventory.setItem(i, grayGlass);
+                    inventory.setItem(i, RudiCrates.getPlugin().getItemManager().grayGlass);
                 }
             }
         }
     }
     
     public void loadPreviewInventories() {
-        for (Crate crate : CrateUtils.getCrates()) {
+        for (Crate crate : RudiCrates.getPlugin().getCrateUtils().getCrates()) {
 
             final FileConfiguration config = YamlConfiguration.loadConfiguration(crate.getFile());
             final List<Inventory> inventories = new ArrayList<>();
@@ -53,13 +51,13 @@ public class PreviewInventoryUtils extends ItemManager {
             int inventoryAmount = (int) Math.ceil(config.getKeys(false).size() / 45.0);
 
             for (int i = 0; i < inventoryAmount; i++) {
-                Inventory inventory = Bukkit.createInventory(null, 54, crate.getDisplayname() + "§8 → Gewinne");
+                Inventory inventory = Bukkit.createInventory(null, 54, crate.getDisplayname() + " " + RudiCrates.getPlugin().getLanguage().preview);
                 inventories.add(inventory);
             }
 
             config.getKeys(false).forEach(key -> {
-                String id = "§8Item-ID: " + key;
-                String chance = "§2Gewinnchance: §a" + config.getDouble(key + ".chance") + "%";
+                String id = RudiCrates.getPlugin().getLanguage().itemPreviewID.replace("%id%", key);
+                String chance = RudiCrates.getPlugin().getLanguage().itemPreviewChance.replace("%chance%", String.valueOf(config.getDouble(key + ".chance")));
                 ItemStack item = new ItemBuilder(config.getItemStack(key + ".item")).addLore("", chance).toItem();
 
                 if (config.get(key + ".limited") != null) {
@@ -72,13 +70,13 @@ public class PreviewInventoryUtils extends ItemManager {
 
             inventories.forEach(inventory -> {
                 for (int i = 46; i < 54; i++) {
-                    inventory.setItem(i, blueGlass);
+                    inventory.setItem(i, RudiCrates.getPlugin().getItemManager().blueGlass);
                 }
 
-                inventory.setItem(45, back);
-                inventory.setItem(48, previousPage);
-                inventory.setItem(49, currentPage(inventories.indexOf(inventory) + 1));
-                inventory.setItem(50, nextPage);
+                inventory.setItem(45, RudiCrates.getPlugin().getItemManager().back);
+                inventory.setItem(48, RudiCrates.getPlugin().getItemManager().previousPage);
+                inventory.setItem(49, RudiCrates.getPlugin().getItemManager().currentPage(inventories.indexOf(inventory) + 1));
+                inventory.setItem(50, RudiCrates.getPlugin().getItemManager().nextPage);
             });
 
             cratePreviewInventoriesMap.put(crate.getName(), inventories);
@@ -89,21 +87,21 @@ public class PreviewInventoryUtils extends ItemManager {
     public void openCrateMenu(Player player) {
         final FileConfiguration config = RudiCrates.getPlugin().getConfig();
         
-        Arrays.stream(CrateUtils.getCrates()).forEach(crate -> {
+        Arrays.stream(RudiCrates.getPlugin().getCrateUtils().getCrates()).forEach(crate -> {
             int slot = config.getInt("crates." + crate.getName() + ".slot");
             if(slot > menuInventory.getSize()) {
-                Bukkit.getConsoleSender().sendMessage(Messages.PREFIX + "§cFehlerhafter Slot-Wert in der Config bei der Crate '" + crate.getName() + "'.");
+                Bukkit.getConsoleSender().sendMessage(RudiCrates.getPlugin().getLanguage().incorrectSlotValue.replace("%crate%", crate.getName()));
                 return;
             }
             
-            menuInventory.setItem(--slot, getCrateItem(player, crate));
+            menuInventory.setItem(--slot, RudiCrates.getPlugin().getItemManager().getCrateItem(player, crate));
         });
         player.openInventory(menuInventory);
     }
     
     public void setupCrateMenu() {
         String inventoryTitle = RudiCrates.getPlugin().getConfig().getString("inventorytitle");
-        final int inventorySize = (RudiCrates.getPlugin().getConfig().getInt("inventoryrows")) *9;
+        final int inventorySize = RudiCrates.getPlugin().getConfig().getInt("inventoryrows") *9;
         final int closeItemSlot = RudiCrates.getPlugin().getConfig().getInt("closeinventoryslot") -1;
         final boolean useCloseItem = RudiCrates.getPlugin().getConfig().getBoolean("usecloseinventory");
         final boolean useWallItem = RudiCrates.getPlugin().getConfig().getBoolean("usefillitem");
@@ -128,8 +126,8 @@ public class PreviewInventoryUtils extends ItemManager {
 
         if (!useCloseItem) return;
         if (closeItemSlot >= 0 && closeItemSlot <= (inventorySize -1) ) {
-            menuInventory.setItem(closeItemSlot, closeMenu);
+            menuInventory.setItem(closeItemSlot, RudiCrates.getPlugin().getItemManager().closeMenu);
         } else
-            Bukkit.getConsoleSender().sendMessage(Messages.PREFIX + "§cFehlerhafter Wert bei 'closeinventoryslot' in der config. Der Wert muss mindestens 1 und darf höchstens " + inventorySize + " sein.");
+            Bukkit.getConsoleSender().sendMessage( RudiCrates.getPlugin().getLanguage().incorrectCloseInventorySlot.replace("%highest%", String.valueOf(inventorySize)));
     }
 }

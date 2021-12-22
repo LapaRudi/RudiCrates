@@ -5,6 +5,7 @@ package de.laparudi.rudicrates.utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.util.UUIDTypeAdapter;
+import de.laparudi.rudicrates.RudiCrates;
 import org.bukkit.Bukkit;
 
 import java.io.BufferedReader;
@@ -20,6 +21,11 @@ import java.util.function.Consumer;
 
 public class UUIDFetcher {
 
+    private static RudiCrates plugin;
+    public UUIDFetcher(RudiCrates plugin) {
+        UUIDFetcher.plugin = plugin;
+    }
+    
     private static final Gson gson = new GsonBuilder().registerTypeAdapter(UUID.class, new UUIDTypeAdapter()).create();
 
     private static final String UUID_URL = "https://api.mojang.com/users/profiles/minecraft/";
@@ -57,7 +63,7 @@ public class UUIDFetcher {
             return data.id;
 
         } catch (Exception e) {
-            Bukkit.getConsoleSender().sendMessage(Messages.PREFIX + "§cFehler beim abfragen der UUID von: §4" + name);
+            Bukkit.getConsoleSender().sendMessage(plugin.getLanguage().uuidFetcherExceptionUUID.replace("%player%", name));
         }
 
         return null;
@@ -93,7 +99,7 @@ public class UUIDFetcher {
             return currentNameData.name;
 
         } catch (Exception e) {
-            Bukkit.getConsoleSender().sendMessage(Messages.PREFIX + "§cFehler beim abfragen des Namens von: §4" + uuid);
+            Bukkit.getConsoleSender().sendMessage(plugin.getLanguage().uuidFetcherExceptionName.replace("%player%", uuid.toString()));
         }
 
         return null;

@@ -1,12 +1,8 @@
 package de.laparudi.rudicrates.crate;
 
 import de.laparudi.rudicrates.RudiCrates;
-import de.laparudi.rudicrates.mysql.SQLUtils;
-import de.laparudi.rudicrates.utils.FileUtils;
 import de.laparudi.rudicrates.utils.LocationNameUtils;
-import de.laparudi.rudicrates.utils.Messages;
 import de.laparudi.rudicrates.utils.items.ItemBuilder;
-import de.laparudi.rudicrates.utils.items.ItemManager;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -28,20 +24,23 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class CrateUtils extends ItemManager {
+public class CrateUtils {
     
     public static List<UUID> currentlyOpening = new ArrayList<>();
     public static Map<UUID, Location> inCrateMenu = new HashMap<>();
     
     public final BaseComponent componentPrefix() {
-        return arrayToSingleComponent(new ComponentBuilder("[").color(ChatColor.of("#494242"))
-                .append("R").color(ChatColor.of("#900000")).append("u").color(ChatColor.of("#9D0000")).append("d").color(ChatColor.of("#A00000"))
-                .append("i").color(ChatColor.of("#A40000")).append("C").color(ChatColor.of("#AA0000")).append("r").color(ChatColor.of("#AD0000"))
-                .append("a").color(ChatColor.of("#B00000")).append("t").color(ChatColor.of("#BB0000")).append("e").color(ChatColor.of("#C00000"))
-                .append("s").color(ChatColor.of("#C00000")).append("] ").color(ChatColor.of("#494242")).create());
+        if(RudiCrates.getPlugin().getServerVersion().contains("1.16")) {
+            return arrayToSingleComponent(new ComponentBuilder("[").color(ChatColor.of("#494242"))
+                .append("R").color(ChatColor.of("#970460")).append("u").color(ChatColor.of("#96297b")).append("d").color(ChatColor.of("#914195"))
+                .append("i").color(ChatColor.of("#8755ac")).append("C").color(ChatColor.of("#7968c0")).append("r").color(ChatColor.of("#677ad0"))
+                .append("a").color(ChatColor.of("#538adc")).append("t").color(ChatColor.of("#3c9ae5")).append("e").color(ChatColor.of("#24a9ea"))
+                .append("s").color(ChatColor.of("#18b7ec")).append("] ").color(ChatColor.of("#494242")).create());
+        }
+        return new TextComponent("§8[§4Rudi§5Crates§8] §r");
     }
 
-    public static Crate[] getCrates() {
+    public final Crate[] getCrates() {
         final List<Crate> list = new ArrayList<>();
         
         for(String key : RudiCrates.getPlugin().getConfig().getKeys(true)) {
@@ -53,7 +52,7 @@ public class CrateUtils extends ItemManager {
         
         return list.toArray(Crate[]::new);
     }
-
+    
     private ItemStack getRandomItem(Crate crate) {
         if(crate.getMap().isEmpty()) return null;
         final FileConfiguration config = YamlConfiguration.loadConfiguration(crate.getFile());
@@ -75,7 +74,7 @@ public class CrateUtils extends ItemManager {
     private boolean loop = true;
     
     public void animation(Player player, Crate crate, int winningItemID) {
-        final Inventory animationInventory = Bukkit.createInventory(null, 27, crate.getDisplayname() + "§8 wird geöffnet...");
+        final Inventory animationInventory = Bukkit.createInventory(null, 27, crate.getDisplayname() + "§8 " + RudiCrates.getPlugin().getLanguage().opening);
         final FileConfiguration crateConfig = YamlConfiguration.loadConfiguration(crate.getFile());
         final ItemStack winningItem = crateConfig.getItemStack(winningItemID + ".item");
         
@@ -84,7 +83,7 @@ public class CrateUtils extends ItemManager {
         }
 
         final ItemStack winIndicator = new ItemBuilder(Material.getMaterial(Objects.requireNonNull(RudiCrates.getPlugin().getConfig().getString("windisplayitem"))))
-                .setName("§c↓ §6Dein Gewinn §c↓").invisibleEnchant(RudiCrates.getPlugin().getConfig().getBoolean("windisplayitemenchant")).toItem();
+                .setName(RudiCrates.getPlugin().getConfig().getString("windisplayname")).invisibleEnchant(RudiCrates.getPlugin().getConfig().getBoolean("windisplayitemenchant")).toItem();
         animationInventory.setItem(4, winIndicator);
         
         for (int i = 9; i < 18; i++) {
@@ -155,8 +154,8 @@ public class CrateUtils extends ItemManager {
                 return;
             }
             
-            inventory.setItem(left, greenGlass);
-            inventory.setItem(right, greenGlass);
+            inventory.setItem(left, RudiCrates.getPlugin().getItemManager().greenGlass);
+            inventory.setItem(right, RudiCrates.getPlugin().getItemManager().greenGlass);
             player.playSound(player.getLocation(), RudiCrates.getPlugin().getVersionUtils().blazeShoot(), 0.5F, 1.5F);
             left--;
             right++;
@@ -166,16 +165,16 @@ public class CrateUtils extends ItemManager {
 
     public void openCrate(Player player, Crate crate, boolean animation) {
         if (!RudiCrates.getPlugin().getConfig().getBoolean("enabled")) {
-            player.sendMessage(Messages.PREFIX + "§cDas öffnen von Crates ist aktuell deaktiviert.");
+            player.sendMessage(RudiCrates.getPlugin().getLanguage().crateOpeningDisabled);
             return;
         }
 
         final UUID uuid = player.getUniqueId();
-        final boolean noVirtualCrates = RudiCrates.getPlugin().getConfig().getBoolean("usemysql") ? SQLUtils.getCrateAmount(uuid, crate) < 1 : FileUtils.getCrateAmount(uuid, crate) < 1;
+        final boolean noVirtualCrates = RudiCrates.getPlugin().getDataUtils().getCrateAmount(uuid, crate) < 1;
         final boolean noItemCrates = this.getKeyItemAmount(player, crate) < 1;
 
         if (noVirtualCrates && noItemCrates) {
-            player.sendMessage(Messages.PREFIX + "§cDu hast keine Crate mehr übrig.");
+            player.sendMessage(RudiCrates.getPlugin().getLanguage().noCratesRemaining);
             return;
         }
 
@@ -183,16 +182,17 @@ public class CrateUtils extends ItemManager {
         final Map<ItemStack, Double[]> chances = crate.getMap().get(crate.getName());
 
         if (crateConfig.getKeys(false).isEmpty()) {
-            player.sendMessage(Messages.PREFIX + "§fDiese Crate hat keine Gewinne.");
+            player.sendMessage(RudiCrates.getPlugin().getLanguage().noWinsInCrate);
 
             if (player.hasPermission("rudicrates.addtocrate")) {
-                player.sendMessage(Messages.PREFIX + "§7Benutze §f/addtocrate §7um Items hinzuzufügen.");
+                player.sendMessage(RudiCrates.getPlugin().getLanguage().noWinsInCrateAddon);
             }
+            
             return;
         }
 
         if (chances == null || chances.entrySet().isEmpty()) {
-            player.sendMessage(Messages.PREFIX + "§fFehlerhafte Gewinnchancen.");
+            player.sendMessage(RudiCrates.getPlugin().getLanguage().incorrectWinChances);
             return;
         }
 
@@ -207,7 +207,7 @@ public class CrateUtils extends ItemManager {
                 final boolean limited = crateConfig.get(id + ".limited") != null;
 
                 if (item == null) {
-                    player.sendMessage(Messages.PREFIX + "§cÖffnung abgebrochen. §fFehlerhaftes Item §7(ID: " + id + ")");
+                    player.sendMessage(RudiCrates.getPlugin().getLanguage().openingCancelled.replace("%id%", String.valueOf(id)));
                     return;
                 }
 
@@ -240,9 +240,9 @@ public class CrateUtils extends ItemManager {
 
                         if (RudiCrates.getPlugin().getConfig().getDouble("broadcastlimited") >= chance) {
                             component.addExtra(componentPrefix());
-                            component.addExtra("§c" + player.getName() + "§a hat ");
+                            component.addExtra(RudiCrates.getPlugin().getLanguage().win1.replace("%player%", player.getName()).replace("%amount%", amount));
                             component.addExtra(display);
-                            component.addExtra("§a aus einer " + crate.getDisplayname() + "§a gewonnen! §fMit einer Chance von §c" + chance + "% §8(§fNoch §c" + limit + "§f verfügbar.§8)");
+                            component.addExtra(RudiCrates.getPlugin().getLanguage().winLimited.replace("%crate%", crate.getDisplayname()).replace("%chance%", String.valueOf(chance)).replace("%amount%", String.valueOf(limit)));
 
                             for (Player players : Bukkit.getOnlinePlayers()) {
                                 players.spigot().sendMessage(component);
@@ -251,9 +251,9 @@ public class CrateUtils extends ItemManager {
 
                         } else {
                             component.addExtra(componentPrefix());
-                            component.addExtra("§aDu hast §6");
+                            component.addExtra(RudiCrates.getPlugin().getLanguage().win1Self.replace("%amount%", amount));
                             component.addExtra(display);
-                            component.addExtra("§a aus einer " + crate.getDisplayname() + "§a gewonnen! §fMit einer Chance von §c" + chance + "% §8(§fNoch §c" + limit + "§f verfügbar.§8)");
+                            component.addExtra(" " + RudiCrates.getPlugin().getLanguage().winLimited.replace("%crate%", crate.getDisplayname()).replace("%chance%", String.valueOf(chance)).replace("%amount%", String.valueOf(limit)));
                             player.spigot().sendMessage(component);
                         }
 
@@ -279,30 +279,26 @@ public class CrateUtils extends ItemManager {
                     if (!limited && chance <= RudiCrates.getPlugin().getConfig().getDouble("broadcast")) {
                         BaseComponent component = new TextComponent();
                         component.addExtra(componentPrefix());
-                        component.addExtra("§c" + player.getName() + "§7 hat §6");
+                        component.addExtra(RudiCrates.getPlugin().getLanguage().win1.replace("%player%", player.getName()).replace("%amount%", amount));
                         component.addExtra(display);
-                        component.addExtra(" §7aus einer §f" + crate.getDisplayname() + "§7 gewonnen. Mit einer Wahrscheinlichkeit von §f" + chance + "%");
+                        component.addExtra(" " + RudiCrates.getPlugin().getLanguage().winBroadcast.replace("%player%", player.getName()).replace("%crate%", crate.getDisplayname()).replace("%chance%", String.valueOf(chance)));
                         Bukkit.getOnlinePlayers().forEach(players -> players.spigot().sendMessage(component));
 
                     } else if (!limited) {
                         BaseComponent component = new TextComponent();
                         component.addExtra(componentPrefix());
-                        component.addExtra("§aDu hast §f" + amount + "§6");
+                        component.addExtra(RudiCrates.getPlugin().getLanguage().win1Self.replace("%amount%", amount));
                         component.addExtra(display);
-                        component.addExtra("§a gewonnen! §8(§f" + chance + "%§8)");
+                        component.addExtra(RudiCrates.getPlugin().getLanguage().win.replace("%chance%", String.valueOf(chance)));
                         player.spigot().sendMessage(component);
                     }
 
                     if (!noItemCrates) {
                         this.removeKeyItem(player, crate);
 
-                    } else {
-                        if (RudiCrates.getPlugin().getConfig().getBoolean("usemysql")) {
-                            SQLUtils.removeCrates(uuid, crate, 1);
-                        } else
-                            FileUtils.removeCrates(uuid, crate, 1);
-                    }
-
+                    } else
+                        RudiCrates.getPlugin().getDataUtils().removeCrates(uuid, crate, 1);
+                    
                     if (!animation) {
                         Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> RudiCrates.getPlugin().getInventoryUtils().openCrateMenu(player), 2);
                     }
@@ -355,7 +351,7 @@ public class CrateUtils extends ItemManager {
     }
     
     public int getKeyItemAmount(Player player, Crate crate) {
-        final ItemStack keyItem = getCrateKeyItem(crate, 1);
+        final ItemStack keyItem = RudiCrates.getPlugin().getItemManager().getCrateKeyItem(crate, 1);
         int count = 0;
         
         for(ItemStack item : player.getInventory().getContents()) {
@@ -373,7 +369,7 @@ public class CrateUtils extends ItemManager {
         for(ItemStack item : player.getInventory().getContents()) {
             if(item == null) continue;
             
-            if(item.isSimilar(getCrateKeyItem(crate, 1))) {
+            if(item.isSimilar(RudiCrates.getPlugin().getItemManager().getCrateKeyItem(crate, 1))) {
                 item.setAmount(item.getAmount() -1);
             }
         }

@@ -1,8 +1,7 @@
 package de.laparudi.rudicrates.commands;
 
+import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.Crate;
-import de.laparudi.rudicrates.crate.CrateUtils;
-import de.laparudi.rudicrates.utils.Messages;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -22,65 +21,65 @@ public class RemoveFromCrateCommand implements CommandExecutor, TabCompleter {
     
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if(!(sender.hasPermission("rudicrates.removefromcrate"))) {
-            sender.sendMessage(Messages.NO_PERMISSION.toString());
+        if (!(sender.hasPermission("rudicrates.removefromcrate"))) {
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().noPermission);
             return true;
         }
-        
-        if(args.length != 2) {
-            sender.sendMessage(Messages.SYNTAX_REMOVEFROMCRATE.toString());
+
+        if (args.length != 2) {
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().removeFromCrateSyntax);
             return true;
         }
-        
+
         Crate crate;
 
         try {
             crate = Crate.getByName(args[0]);
         } catch (NullPointerException e) {
-            sender.sendMessage(Messages.UNKNOWN_CRATE.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownCrate);
             return true;
         }
-        
+
         final FileConfiguration config = YamlConfiguration.loadConfiguration(crate.getFile());
         int id;
-        
+
         try {
             id = Integer.parseInt(args[1]);
         } catch (NumberFormatException e) {
-            sender.sendMessage(Messages.PREFIX + "§7Du musst einen Zahlenwert angeben.");
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().noNumber);
             return true;
         }
-        
-        if(!config.getKeys(false).contains(String.valueOf(id))) {
-            sender.sendMessage(Messages.PREFIX + "§7Ungültige Item-ID.");
+
+        if (!config.getKeys(false).contains(String.valueOf(id))) {
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownID);
             return true;
         }
-        
+
         config.set(String.valueOf(id), null);
-        
+
         try {
             config.save(crate.getFile());
-            sender.sendMessage(Messages.PREFIX + "§7Item §f" + id + "§7 aus der Crate §f" + crate.getName() + "§7 entfernt.");
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().removeFromCrateDone.replace("%id%", String.valueOf(id)).replace("%crate%", crate.getName()));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
+
         return true;
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if(!sender.hasPermission("rudicrates.addtocrate")) return null;
+        if (!sender.hasPermission("rudicrates.addtocrate")) return Collections.emptyList();
         final List<String> complete = new ArrayList<>();
         final List<String> crateArgs = new ArrayList<>();
-        Arrays.stream(CrateUtils.getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
-        
-        if(args.length == 1) {
+        Arrays.stream(RudiCrates.getPlugin().getCrateUtils().getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
+
+        if (args.length == 1) {
             StringUtil.copyPartialMatches(args[0], crateArgs, complete);
             return complete;
         }
 
-        if(args.length == 2) {
+        if (args.length == 2) {
             final FileConfiguration config = YamlConfiguration.loadConfiguration(Crate.getByName(args[0]).getFile());
             StringUtil.copyPartialMatches(args[1], config.getKeys(false), complete);
             return complete;
@@ -88,5 +87,4 @@ public class RemoveFromCrateCommand implements CommandExecutor, TabCompleter {
 
         return Collections.emptyList();
     }
-    
 }

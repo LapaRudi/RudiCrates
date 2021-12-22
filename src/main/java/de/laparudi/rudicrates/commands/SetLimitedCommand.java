@@ -1,8 +1,7 @@
 package de.laparudi.rudicrates.commands;
 
+import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.Crate;
-import de.laparudi.rudicrates.crate.CrateUtils;
-import de.laparudi.rudicrates.utils.Messages;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,16 +18,16 @@ import java.util.Collections;
 import java.util.List;
 
 public class SetLimitedCommand implements CommandExecutor, TabCompleter {
-
+    
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
         if(!sender.hasPermission("rudicrates.setlimited")) {
-            sender.sendMessage(Messages.NO_PERMISSION.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().noPermission);
             return true;
         }
 
         if(args.length != 3) {
-            sender.sendMessage(Messages.SYNTAX_SETLIMITED.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().setLimitedSyntax);
             return true;
         }
 
@@ -38,14 +37,14 @@ public class SetLimitedCommand implements CommandExecutor, TabCompleter {
         try {
             crate = Crate.getByName(args[0]);
         } catch (NullPointerException e) {
-            sender.sendMessage(Messages.UNKNOWN_CRATE.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownCrate);
             return true;
         }
 
         final FileConfiguration config = YamlConfiguration.loadConfiguration(crate.getFile());
 
         if(!config.contains(args[1])) {
-            sender.sendMessage(Messages.UNKNOWN_ID.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownID);
             return true;
         }
         
@@ -53,7 +52,7 @@ public class SetLimitedCommand implements CommandExecutor, TabCompleter {
             config.set(args[2] + ".limited", null);
             try {
                 config.save(crate.getFile());
-                sender.sendMessage(Messages.PREFIX + "§7Die Limitierung von Item §f" + args[1] + " §7aus der Crate §f" + crate.getName() + "§7 wurde entfernt.");
+                sender.sendMessage(RudiCrates.getPlugin().getLanguage().setLimitedRemoved.replace("%id%", args[1]).replace("%crate%", crate.getName()));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -63,17 +62,17 @@ public class SetLimitedCommand implements CommandExecutor, TabCompleter {
         try {
             amount = Integer.parseInt(args[2]);
         } catch (NumberFormatException e) {
-            sender.sendMessage(Messages.NO_NUMBER.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().noNumber);
             return true;
         }
         
         if(amount < 0) {
-            sender.sendMessage(Messages.PREFIX + "§7Der Wert darf nicht unter 0 sein.");
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().notUnderZero);
             return true;
         }
 
         config.set(args[1] + ".limited", amount);
-        sender.sendMessage(Messages.PREFIX + "§7Item §f" + args[1] + "§7 aus der Crate §f" + crate.getName() + "§7 wurde auf §f" + amount + "§7 Stück limitiert.");
+        sender.sendMessage(RudiCrates.getPlugin().getLanguage().setLimitedDone.replace("%id%", args[1]).replace("%crate%", crate.getName()).replace("%amount%", String.valueOf(amount)));
 
         try {
             config.save(crate.getFile());
@@ -86,10 +85,10 @@ public class SetLimitedCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if(!sender.hasPermission("rudicrates.setlimited")) return null;
+        if(!sender.hasPermission("rudicrates.setlimited")) return Collections.emptyList();
         final List<String> complete = new ArrayList<>();
         final List<String> crateArgs = new ArrayList<>();
-        Arrays.stream(CrateUtils.getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
+        Arrays.stream(RudiCrates.getPlugin().getCrateUtils().getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
 
         if(args.length == 1) {
             StringUtil.copyPartialMatches(args[0], crateArgs, complete);

@@ -3,9 +3,7 @@ package de.laparudi.rudicrates.listeners;
 import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.Crate;
 import de.laparudi.rudicrates.crate.CrateUtils;
-import de.laparudi.rudicrates.utils.Messages;
 import de.laparudi.rudicrates.utils.PreviewInventoryUtils;
-import de.laparudi.rudicrates.utils.items.ItemManager;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,8 +13,8 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Objects;
 
-public class CrateInventoryListener extends ItemManager implements Listener {
-
+public class CrateInventoryListener implements Listener {
+    
     @EventHandler
     public void onCrateMenuClick(final InventoryClickEvent event) {
         if(CrateUtils.currentlyOpening.contains(event.getWhoClicked().getUniqueId())) {
@@ -32,10 +30,10 @@ public class CrateInventoryListener extends ItemManager implements Listener {
         
         event.setCancelled(true);
         if (item == null) return;
-        if(item.isSimilar(closeMenu)) player.closeInventory();
+        if(item.isSimilar(RudiCrates.getPlugin().getItemManager().closeMenu)) player.closeInventory();
 
-        for (Crate crate : CrateUtils.getCrates()) {
-            if (!item.isSimilar(getCrateItem(player, crate))) {
+        for (Crate crate : RudiCrates.getPlugin().getCrateUtils().getCrates()) {
+            if (!item.isSimilar(RudiCrates.getPlugin().getItemManager().getCrateItem(player, crate))) {
                 continue;
             }
             
@@ -44,7 +42,7 @@ public class CrateInventoryListener extends ItemManager implements Listener {
 
             } else if (event.isRightClick()) {
                 if(PreviewInventoryUtils.cratePreviewInventoriesMap.get(crate.getName()).isEmpty()) {
-                   player.sendMessage(Messages.PREFIX + "§fDiese Crate hat keine Gewinne.");
+                   player.sendMessage(RudiCrates.getPlugin().getLanguage().noWinsInCrate);
                    return;
                 }
 

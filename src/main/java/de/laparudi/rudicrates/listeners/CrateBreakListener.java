@@ -2,8 +2,6 @@ package de.laparudi.rudicrates.listeners;
 
 import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.utils.LocationNameUtils;
-import de.laparudi.rudicrates.utils.Messages;
-import de.laparudi.rudicrates.utils.items.ItemManager;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -16,28 +14,29 @@ import org.bukkit.event.block.BlockBreakEvent;
 import java.io.IOException;
 import java.util.List;
 
-public class CrateBreakListener extends ItemManager implements Listener {
-
+public class CrateBreakListener implements Listener {
+    
     @EventHandler
     public void onCrateBreak(final BlockBreakEvent event) throws IOException {
-        if(event.getBlock().getType() != Material.CHEST) return;
+        if (event.getBlock().getType() != Material.CHEST) return;
 
         final Player player = event.getPlayer();
         final FileConfiguration locations = YamlConfiguration.loadConfiguration(RudiCrates.getPlugin().getLocationsFile());
         final List<String> list = locations.getStringList("locations");
         final String location = LocationNameUtils.toLocationString(event.getBlock().getLocation());
-        
-        if(!list.contains(location)) return;
+
+        if (!list.contains(location)) return;
         list.remove(location);
         locations.set("locations", list);
         locations.save(RudiCrates.getPlugin().getLocationsFile());
-        
+
         event.setCancelled(true);
         event.getBlock().setType(Material.AIR);
-        
-        if(player.getGameMode() != GameMode.CREATIVE) {
-            event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), crateBlock);
+
+        if (player.getGameMode() != GameMode.CREATIVE) {
+            event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), RudiCrates.getPlugin().getItemManager().crateBlock);
         }
-        player.sendMessage(Messages.PREFIX + "§fCrate Opening §7abgebaut.");
+        
+        player.sendMessage(RudiCrates.getPlugin().getLanguage().crateOpeningRemoved);
     }
 }

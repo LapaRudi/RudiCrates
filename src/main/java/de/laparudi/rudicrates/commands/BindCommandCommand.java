@@ -1,8 +1,7 @@
 package de.laparudi.rudicrates.commands;
 
+import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.Crate;
-import de.laparudi.rudicrates.crate.CrateUtils;
-import de.laparudi.rudicrates.utils.Messages;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,22 +18,17 @@ import java.util.Collections;
 import java.util.List;
 
 public class BindCommandCommand implements CommandExecutor, TabCompleter {
-
+    
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
         if (!sender.hasPermission("rudicrates.bindcommand")) {
-            sender.sendMessage(Messages.NO_PERMISSION.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().noPermission);
             return true;
         }
 
         if (args.length < 3) {
-            sender.sendMessage(Messages.PREFIX + "§7Platzhalter:");
-            sender.sendMessage(Messages.PREFIX + "§c%crate% §f: §7Die geöffnete Crate.");
-            sender.sendMessage(Messages.PREFIX + "§c%player% §f: §7Spieler der das Item gewonnen hat.");
-            sender.sendMessage(Messages.PREFIX + "§c%chance% §f: §7Die Gewinnchance des gewonnenen Items.");
-            sender.sendMessage("");
-            sender.sendMessage(Messages.PREFIX + "§7Benutze '#remove' als 3. Argument um den Befehl zu entfernen.");
-            sender.sendMessage(Messages.SYNTAX_BINDCOMMAND.toString());
+            RudiCrates.getPlugin().getLanguage().bindCommandHelp.forEach(sender::sendMessage);
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().bindCommandSyntax);
             return true;
         }
 
@@ -43,25 +37,26 @@ public class BindCommandCommand implements CommandExecutor, TabCompleter {
         try {
             crate = Crate.getByName(args[0]);
         } catch (NullPointerException e) {
-            sender.sendMessage(Messages.UNKNOWN_CRATE.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownCrate);
             return true;
         }
 
         final FileConfiguration config = YamlConfiguration.loadConfiguration(crate.getFile());
 
         if (!config.contains(args[1])) {
-            sender.sendMessage(Messages.UNKNOWN_ID.toString());
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownID);
             return true;
         }
 
         if (args[2].equalsIgnoreCase("#remove")) {
             if (config.getString(args[1] + ".command") == null) {
-                sender.sendMessage(Messages.PREFIX + "Dieses Item hat keinen zugehörigen Befehl.");
+                sender.sendMessage(RudiCrates.getPlugin().getLanguage().noBoundCommand);
                 return true;
             }
 
             try {
-                sender.sendMessage(Messages.PREFIX + "§7Befehl §f/" + config.getString(args[1] + ".command") + "§7 wurde von Item §f" + args[1] + "§7 aus Crate §f" + crate.getName() + "§7 entfernt.");
+                sender.sendMessage(RudiCrates.getPlugin().getLanguage().bindCommandRemoved.replace("%command%", "/" + config.getString(args[1] + command))
+                        .replace("%id%", args[1]).replace("%crate%", crate.getName()));
                 config.set(args[1] + ".command", null);
                 config.save(crate.getFile());
             } catch (IOException e) {
@@ -76,12 +71,12 @@ public class BindCommandCommand implements CommandExecutor, TabCompleter {
             builder.append(" ").append(args[i]);
         }
 
-        final String cmd = args[2].startsWith("/") ? builder.toString().trim().replaceFirst("/", "") : builder.toString().trim();
-        config.set(args[1] + ".command", cmd);
+        final String bindCommand = args[2].startsWith("/") ? builder.toString().trim().replaceFirst("/", "") : builder.toString().trim();
+        config.set(args[1] + ".command", bindCommand);
 
         try {
             config.save(crate.getFile());
-            sender.sendMessage(Messages.PREFIX + "§7Befehl §f/" + cmd + "§7 zu Item §f" + args[1] + "§7 in Crate §f" + crate.getName() + "§7 hinzugefügt.");
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().bindCommandDone.replace("%command%", bindCommand).replace("%id%", args[1]).replace("%crate%", crate.getName()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -91,10 +86,10 @@ public class BindCommandCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if (!sender.hasPermission("rudicrates.bindcommand")) return null;
+        if (!sender.hasPermission("rudicrates.bindcommand")) return Collections.emptyList();
         final List<String> completions = new ArrayList<>();
         final List<String> crateArgs = new ArrayList<>();
-        Arrays.stream(CrateUtils.getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
+        Arrays.stream(RudiCrates.getPlugin().getCrateUtils().getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
 
         if (args.length == 1) {
             StringUtil.copyPartialMatches(args[0], crateArgs, completions);

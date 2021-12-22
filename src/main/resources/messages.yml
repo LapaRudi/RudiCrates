@@ -1,0 +1,139 @@
+# RudiCrates Messages
+
+# * : Placeholders can be used:
+#     1 = %crate%
+#     2 = %id%
+#     3 = %chance%
+#     4 = %player%
+#     5 = %command%
+#     6 = %page%
+#     7 = %amount%
+#     8 = %highest%
+#     9 = %value%
+
+no_permission: '&fYou are not allowed to use this command.'
+no_number: '&fYou must enter a number.'
+no_item_in_hand: '&fYou must hold an item in your hand.'
+no_bound_command: '&fThis item has no bound command.'
+incorrect_slot_value: '&cThe crate (%crate%) has an incorrect slot-value in the config.' # *1
+incorrect_closeinventory_slot: '&cIncorrect slot-value at "closeinventoryslot" in the config. (Can be from 1-%highest%)' # *8
+
+crate_opening_disabled: '&cThe opening of crates is currently disabled.'
+incorrect_win_chances: '&cIncorrect win chances.'
+opening_cancelled: '&cOpening cancelled. &fIncorrect Item (ID: %id%)' # *2
+no_crates_remaining: '&fYou have no crates left.'
+no_wins_in_crate: '&fThis crate has no wins.'
+no_wins_in_crate_addon: '&7Use &f/addtocrate &7to add some.' # Displayed to all players with permission 'rudicrates.addtocrate'
+
+unknown_player: '&fPlayer not found.'
+unknown_crate: '&fUnknown Crate. (Note upper and lower case)'
+unknown_id: '&fUnknown Item-ID.'
+
+item_already_in_crate: '&7This Item is already in this Crate. To change the win chance use &f/editchance&7.'
+at_least_one: '&7You must enter a value of at least 1.'
+not_under_zero: '&7You must enter a value of at least 0.'
+crate_opening_received: '&7You received a &fCrate Opening&7.'
+opening: '&8is being opened...'
+preview: '&8→ Preview'
+
+reload_all: '&aConfig, messages and preview items reloaded.'
+reload_config: '&aConfig reloaded.'
+reload_messages: '&aMessages reloaded.'
+reload_preview: '&aPreview items reloaded.'
+
+rudicrates_syntax: '&f/rudicrates &7[&freload&7/&ftoggle&7]'
+rudicrates_disabled: '&fThe opening of crates has been &cdisabled.'
+rudicrates_enabled: '&fThe opening of crates has been &aenabled.'
+
+addtocrate_syntax: '&f/addtocrate &7<&fCrate&7> <&fWin chance in %&7>'
+addtocrate_done: '&7Item was added to Crate &f%crate% &7with a chance of &f%chance%%' # *1, *3
+  
+removefromcrate_syntax: '&f/removefromcrate &7<&fCrate&7> <&fItem-ID&7>'
+removefromcrate_done: '&7Item &f%id% &7has been removed from crate &f%crate%&7.'
+
+editchance_syntax: '&f/editchance &7<&fCrate&7> <&fItem-ID&7> <&fNew chance in %&7>'
+editchance_done: '&7Win chance for Item &f%id% &7from Crate &f%crate% &7has been changed to &f%chance%%&7.' # *1, *2, *3
+
+bindcommand_syntax: '&f/bindcommand &7<&fCrate&7> <&fItem-ID&7> <&fCommand&7>'
+bindcommand_removed: '&7The command &f%command% &7was removed from Item &f%id% &7in Crate &f%crate%&7.' # *1, *2, *5
+bindcommand_done: 'The command &f%command% &7has been added to Item &f%id% &7in Crate &f%crate%' # *1, *2, *5
+
+bindcommand_help: # Will be displayed above the syntax. The placeholders have no impact here.
+  - '&7Placeholders:'
+  - '&c%crate% &8» &fThe opened crate'
+  - '&c%player% &8» &fThe player who opened the crate'
+  - '&c%chance% &8» &fThe win chance of the won item'
+  - ' '
+  - '&fUse "#remove" as 3rd argument to remove the command.'
+
+setvirtual_syntax: '&f/setvirtual &7<&fCrate&7> <&fItem-ID&7> <&ftrue&7/&ffalse&7>'
+setvirtual_warning: '&cWarning: &7Without a bound command, the player will not get a win. Add one with &f/bindcommand.'
+setvirtual_done: '&7Virtual has been set to &f%value% &7for item &f%id% &7in crate %crate%&7.' # *1, *2, *9
+
+setlimited_syntax: '&f/setlimited &7<&fCrate&7> <&fItem-ID&7> <&fAmount&7>'
+setlimited_removed: '&7The limitation from item &f%id% &7in crate &f%crate% &7has been removed.' # *1, *2
+setlimited_done: '&7The item &f%id% &7from crate &f%crate% &7has been limited to an amount of &f%amount%&7.' # *1, *2, *7
+
+key_header: '&fCrates from &c%player%&f:' # *4
+key_reset: '&7The crates of &c%player% &7have been reset.' # *4
+key_player_not_online: '&fThe specified player has to be online for giving keys as item'
+key_done_add_executor: '&7You gave &c%player% &f%amount%x %crate%&7.' # *1, *4, *7
+key_done_add_target: '&7You received &f%amount%x %crate% &7from &c%player%&7.' # *1, *4, *7
+key_done_remove_executor: '&7You removed &f%amount%x %crate% &7from &c%player%&7.' # *1, *4, *7
+key_done_remove_target: '&c%player% removed &f%amount%x %crate% &7from your Crates.' # *1, *4, *7
+key_done_set_executor: '&7You have set the &f%crate% &7amount of &c%player% &7to &f%amount%&7.' # *1, *4, *7
+key_done_set_target: '&c%player% has set your %crate% &7amount to &f%amount%.' # *1, *4, *7
+key_syntax: '&f/key &7<&fadd&7/&fset&7/&fremove&7/&finfo&7/&freset&7> <&fPlayer&7> <&fCrate&7> <&fAmount&7> [&fitem&7]'
+
+crate_opening_placed: '&fCrate opening placed.'
+crate_opening_removed: '&fCrate opening removed.'
+
+# Items
+item_back_name: '&cBack'
+item_closemenu_name: '&cClose menu'
+item_previouspage_name: '&cPrevious page'
+item_currentpage_name: '&6Page'
+item_nextpage_name: '&2Next page'
+
+item_preview_id: '&8Item-ID: %id%' # *2
+item_preview_chance: '&aWin chance: &2%chance%%' # *3
+
+item_crate_lore: # *7
+  - '&8» &aLeft-click to open'
+  - '&8» &aRight-click to show possible wins'
+  - ''
+  - '&8» &aYou have &2%amount% &aleft'
+  - ''
+  - '&7Use &ashift+right-click &7to skip the animation'
+
+block_crate_name: '&4&lC&c&lr&6&la&e&lte &6&lO&c&lp&4&le&c&ln&6&li&e&lng'
+block_crate_lore:
+  - '&2Places a crate opening'
+  - '&2Drops when breaking'
+
+win_1_self: '&aYou have won &6%amount%' # *7
+win_1: '&c%player% &ahas won &6%amount%' # *4, *7
+# -> Itemname in client-language here
+win_limited: '&afrom a %crate% &awith a chance of &c%chance%% &8(&c%amount% &fleft&8)' # *1, *3, *7
+win_broadcast: '&7from a &r%crate% &7with a chance of &f%chance%%&7.' # *1, *3
+win: '&a! &8(&f%chance%%&8)' # *3
+
+# Descriptions (will be displayed when hovering over the syntax in /rc help)
+description_addtocrate: '&6Adds the item in your hand to the given crate with the given chance.'
+description_removefromcrate: '&6Removes the given item from the given crate.'
+description_editchance: '&6Edits the win chance of the given Item.'
+description_bindcommand: '&6Binds a command to the given item. &7(will be executed by the console when winning the item)'
+description_setlimited: '&6Limits the given item to a specific amount'
+description_setvirtual: '&6Sets the given crate-win virtual. &7(you will not get the item and only the command will be executed)'
+description_getcrateblock: '&6Adds a crate opening block into your inventory.'
+description_key: '&6Manages the crate-keys from players.'
+description_rudicrates: '&6Shows help and reloads the preview Inventories.'
+
+# MySQL
+mysql_connected: '&aMySQL connected'
+mysql_already_connected: '&eMySQL is already connected'
+mysql_could_not_connect: '&cMySQL connection could not be built up. Check if the database is online and the MySQL values in the config are correct.'
+mysql_disabled: '&4RudiCrates will be disabled if you do not want to use MySQL, set usemysql to false in the config.'
+
+uuidfetcher_exeption_uuid: '&cCould not get UUID from &4%player%' # *4
+uuidfetcher_exeption_name: '&cCould not get Name from &4%player%' # *4
