@@ -1,20 +1,22 @@
 # RudiCrates
 RudiCrates Crate-Opening
 
-- Eigene Crates erstellen
-- Crate-Gewinne komplett ingame bearbeiten
-- Bis zu 54 Crates und endlos viele Gewinne pro Crate hinzufügen
-- Vorschau-Inventar mit endlos vielen Seiten
-- Item-Schlüssel und virtuelle Schlüssel
-- Items limitieren und virtuell* machen
-- Befehle an Items binden
-- Itemnamen in der Gewinnnachricht werden in die Client-Sprache übersetzt
-- Schlüssel werden in MySQL oder .yml-Dateien gespeichert
-- Support für 1.8.x, 1.12.2, 1.14.4, und 1.16.5 (Empfohlen: 1.16.5)
+- Create custom Crates
+- Edit crate winnings completely ingame
+- Add up to 54 crates and endless winnings per crate
+- Preview inventory with endless pages
+- Item keys and virtual keys
+- Limit items and make them virtual**
+- Bind commands to items
+- Item names in the win message are translated into client language
+- Keys are stored in a MySQL database or .yml files
+- All messages customizable
+- Support for 1.8.8*, 1.12.2*, 1.14.4*, and 1.16.5 (Recommended: 1.16.5)
 
-Bald:
-- Mehr Animationen
-- Alle Nachrichten änderbar
+Soon:
+- More crate animations
 
-*Virtuelle Items werden nicht an den Spieler gegeben, es wird nur der hinzugefügte Befehl ausgeführt.
- (z.B. sinnvoll für Geld oder Crates)
+*Not tested yet
+
+**Virtual items are not given to the player, only the added command is executed.
+ (e.g. useful for money or crates).
