@@ -35,12 +35,12 @@ public class RudiCratesCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
         if(!sender.hasPermission("rudicrates.reload")) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().prefix + "§fv" + RudiCrates.getPlugin().getDescription().getVersion() + "§7 by LapaRudi");
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().prefix + "§6v" + RudiCrates.getPlugin().getVersion() + "§c by LapaRudi");
             return true;
         }
         
         if(args.length == 0) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().prefix + "§6v" + RudiCrates.getPlugin().getDescription().getVersion() + "§c ↓");
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().prefix + "§6v" + RudiCrates.getPlugin().getVersion() + "§c ↓");
             sender.sendMessage(" ");
             sender.spigot().sendMessage(addToCrateComponent.create());
             sender.spigot().sendMessage(bindCommandComponent.create());
@@ -52,16 +52,17 @@ public class RudiCratesCommand implements CommandExecutor, TabCompleter {
             sender.spigot().sendMessage(setLimitedComponent.create());
             sender.spigot().sendMessage(setVirtualComponent.create());
             sender.sendMessage(" ");
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().prefix + "§6v" + RudiCrates.getPlugin().getDescription().getVersion() + "§c ↑");
+            sender.sendMessage(RudiCrates.getPlugin().getLanguage().prefix + "§6v" + RudiCrates.getPlugin().getVersion() + "§c ↑");
         
         } else if(args.length == 1) {
             if(args[0].equalsIgnoreCase("reload")) {
                 RudiCrates.getPlugin().getInventoryUtils().setupCrateMenu();
                 RudiCrates.getPlugin().getInventoryUtils().loadPreviewInventories();
+                RudiCrates.getPlugin().getCrateUtils().setupKeyItemList();
+                RudiCrates.getPlugin().getCrateUtils().loadChancesResult();
                 RudiCrates.getPlugin().reloadLanguage();
                 RudiCrates.getPlugin().reloadConfig();
                 Crate.reloadCrateMaps();
-                
                 sender.sendMessage(RudiCrates.getPlugin().getLanguage().reloadAll);
                 
             } else if(args[0].equalsIgnoreCase("toggle")) {
@@ -95,6 +96,7 @@ public class RudiCratesCommand implements CommandExecutor, TabCompleter {
                 case "config":
                     RudiCrates.getPlugin().reloadConfig();
                     RudiCrates.getPlugin().getInventoryUtils().setupCrateMenu();
+                    RudiCrates.getPlugin().getCrateUtils().setupKeyItemList();
                     sender.sendMessage(RudiCrates.getPlugin().getLanguage().reloadConfig);
                     break;
                     
@@ -105,6 +107,7 @@ public class RudiCratesCommand implements CommandExecutor, TabCompleter {
                     
                 case "preview":
                     RudiCrates.getPlugin().getInventoryUtils().loadPreviewInventories();
+                    RudiCrates.getPlugin().getCrateUtils().loadChancesResult();
                     sender.sendMessage(RudiCrates.getPlugin().getLanguage().reloadPreview);
                     break;
             }

@@ -16,7 +16,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -64,6 +63,9 @@ public class RudiCrates extends JavaPlugin {
         inventoryUtils.loadPreviewInventories();
         translationUtils.setupTranslations();
         dataUtils.reloadCache();
+        crateUtils.setupKeyItemList();
+        crateUtils.loadChancesResult();
+        
         Bukkit.getConsoleSender().sendMessage(language.prefix + "§2RudiCrates-" + version + " enabled.");
     }
 
@@ -95,13 +97,12 @@ public class RudiCrates extends JavaPlugin {
     }
 
     private void loadListeners() {
-        final PluginManager manager = Bukkit.getPluginManager();
         final Listener[] listeners = new Listener[] { new CrateBreakListener(), new CrateClickListener(),
                 new CratePlaceListener(), new CrateInventoryListener(), new PlayerJoinListener(),
                 new PreviewInventoryListener(), new PlayerInventoryCloseListener(),
                 new CrateInventoryCloseListener(), new PlayerInteractListener() };
         
-        Arrays.stream(listeners).forEach(listener -> manager.registerEvents(listener, this));
+        Arrays.stream(listeners).forEach(listener -> Bukkit.getPluginManager().registerEvents(listener, this));
     }
 
     private void loadFiles() {
@@ -171,7 +172,7 @@ public class RudiCrates extends JavaPlugin {
 
         } else {
             Bukkit.getConsoleSender().sendMessage(language.prefix + "§cYour version (" + serverVersion + ") is not supported by RudiCrates.");
-            Bukkit.getConsoleSender().sendMessage(language.prefix + "§eThe following versions are currently supported: §21.8.x, 1.12.x, 1.14.x, 1.16,x");
+            Bukkit.getConsoleSender().sendMessage(language.prefix + "§eThe following versions are currently supported: §21.8.x, 1.12.x, 1.14.x, 1.16.x");
             unloadPlugin();
         }
     }

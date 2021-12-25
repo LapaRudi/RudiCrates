@@ -25,6 +25,8 @@ public class CrateInventoryListener implements Listener {
         if (!event.getView().getTitle().equals(ChatColor.translateAlternateColorCodes('&',
                 Objects.requireNonNull(RudiCrates.getPlugin().getConfig().getString("inventorytitle"))))) return;
         
+        if(event.getRawSlot() > RudiCrates.getPlugin().getConfig().getInt("inventoryrows") *9) return;
+        
         final ItemStack item = event.getCurrentItem();
         final Player player = (Player) event.getWhoClicked();
         

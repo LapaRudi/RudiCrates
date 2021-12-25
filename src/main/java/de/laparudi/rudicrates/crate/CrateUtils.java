@@ -27,7 +27,9 @@ import java.util.concurrent.ThreadLocalRandom;
 public class CrateUtils {
     
     public static List<UUID> currentlyOpening = new ArrayList<>();
+    public static List<ItemStack> keyItems = new ArrayList<>();
     public static Map<UUID, Location> inCrateMenu = new HashMap<>();
+    private final static Map<String, Double> chancesResult = new HashMap<>();
     
     public final BaseComponent componentPrefix() {
         if(RudiCrates.getPlugin().getServerVersion().contains("1.16")) {
@@ -55,8 +57,7 @@ public class CrateUtils {
     
     private ItemStack getRandomItem(Crate crate) {
         if(crate.getMap().isEmpty()) return null;
-        final FileConfiguration config = YamlConfiguration.loadConfiguration(crate.getFile());
-        final double random = ThreadLocalRandom.current().nextDouble(getChancesValue(config));
+        final double random = ThreadLocalRandom.current().nextDouble(chancesResult.get(crate.getName()));
         
         for(Map.Entry<ItemStack, Double[]> entry : crate.getMap().get(crate.getName()).entrySet()) {
             final Double[] doubles = entry.getValue();
@@ -196,7 +197,7 @@ public class CrateUtils {
             return;
         }
 
-        final double random = ThreadLocalRandom.current().nextDouble(0, getChancesValue(crateConfig));
+        final double random = ThreadLocalRandom.current().nextDouble(0, chancesResult.get(crate.getName()));
         for (Map.Entry<ItemStack, Double[]> entry : chances.entrySet()) {
             Double[] doubles = entry.getValue();
 
@@ -322,14 +323,19 @@ public class CrateUtils {
         return input;
     }
     
-    public double getChancesValue(FileConfiguration config) {
-        double amount = 0;
-        for(String key : config.getKeys(false)) {
-            if(config.get(key + ".limited") != null && config.getInt(key + ".limited") < 1) continue;
-            amount = amount + config.getDouble(key + ".chance");
-        }
-        
-        return amount;
+    public void loadChancesResult() {
+        Arrays.stream(getCrates()).forEach(crate -> {
+            final FileConfiguration config = YamlConfiguration.loadConfiguration(crate.getFile());
+            double amount = 0;
+            
+            for (String key : config.getKeys(false)) {
+                if (config.get(key + ".limited") != null && config.getInt(key + ".limited") < 1) continue;
+                amount = amount + config.getDouble(key + ".chance");
+            }
+            
+            chancesResult.put(crate.getName(), amount);
+            Bukkit.broadcastMessage("put " + amount + " in for crate " + crate.getName());
+        });
     }
     
     private void spawnFirework(Player player) {
@@ -348,6 +354,11 @@ public class CrateUtils {
         final FileConfiguration config = YamlConfiguration.loadConfiguration(RudiCrates.getPlugin().getLocationsFile());
         final List<String> locations = config.getStringList("locations");
         return locations.contains(LocationNameUtils.toLocationString(chest.getLocation()));
+    }
+    
+    public void setupKeyItemList() {
+        keyItems.clear();
+        Arrays.stream(getCrates()).forEach(crate -> keyItems.add(RudiCrates.getPlugin().getItemManager().getCrateKeyItem(crate, 1)));
     }
     
     public int getKeyItemAmount(Player player, Crate crate) {

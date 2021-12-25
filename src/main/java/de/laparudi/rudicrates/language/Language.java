@@ -37,7 +37,7 @@ public class Language {
         return TranslationUtils.translateChatColor(newList);
     }
     
-    public String prefix = Bukkit.getBukkitVersion().contains("1.16") ? RudiCrates.getPlugin().getTranslationUtils().hexColorString(
+    public final String prefix = Bukkit.getBukkitVersion().contains("1.16") ? RudiCrates.getPlugin().getTranslationUtils().hexColorString(
             new String[] { "#4F4F4F", "#970460", "#96297b", "#914195", "#8755ac", "#7968c0", "#677ad0", "#538adc", "#3c9ae5", "#24a9ea", "#18b7ec", "#4F4F4F" },
             new Character[] { '[', 'R', 'u', 'd', 'i', 'C', 'r', 'a', 't', 'e', 's', ']', ' ' }) : "§8[§4Rudi§5Crates§8] §r";
     

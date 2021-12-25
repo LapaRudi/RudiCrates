@@ -6,7 +6,6 @@
 #     3 = %chance%
 #     4 = %player%
 #     5 = %command%
-#     6 = %page%
 #     7 = %amount%
 #     8 = %highest%
 #     9 = %value%
@@ -115,7 +114,7 @@ win_1_self: '&aYou have won &6%amount%' # *7
 win_1: '&c%player% &ahas won &6%amount%' # *4, *7
 # -> Itemname in client-language here
 win_limited: '&afrom a %crate% &awith a chance of &c%chance%% &8(&c%amount% &fleft&8)' # *1, *3, *7
-win_broadcast: '&7from a &r%crate% &7with a chance of &f%chance%%&7.' # *1, *3
+win_broadcast: '&afrom a &r%crate% &awith a chance of &f%chance%%&7.' # *1, *3
 win: '&a! &8(&f%chance%%&8)' # *3
 
 # Descriptions (will be displayed when hovering over the syntax in /rc help)
