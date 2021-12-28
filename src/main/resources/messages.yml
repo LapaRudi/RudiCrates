@@ -1,4 +1,4 @@
-# RudiCrates Messages
+# RudiCrates Messages [0.9.4]
 
 # * : Placeholders can be used:
 #     1 = %crate%
@@ -13,12 +13,11 @@
 no_permission: '&fYou are not allowed to use this command.'
 no_number: '&fYou must enter a number.'
 no_item_in_hand: '&fYou must hold an item in your hand.'
-no_bound_command: '&fThis item has no bound command.'
 incorrect_slot_value: '&cThe crate (%crate%) has an incorrect slot-value in the config.' # *1
 incorrect_closeinventory_slot: '&cIncorrect slot-value at "closeinventoryslot" in the config. (Can be from 1-%highest%)' # *8
 
 crate_opening_disabled: '&cThe opening of crates is currently disabled.'
-incorrect_win_chances: '&cIncorrect win chances.'
+incorrect_win_chances: '&cIncorrect win chances. Try to reload with /rc reload'
 opening_cancelled: '&cOpening cancelled. &fIncorrect Item (ID: %id%)' # *2
 no_crates_remaining: '&fYou have no crates left.'
 no_wins_in_crate: '&fThis crate has no wins.'
@@ -29,7 +28,8 @@ unknown_crate: '&fUnknown Crate. (Note upper and lower case)'
 unknown_id: '&fUnknown Item-ID.'
 
 item_already_in_crate: '&7This Item is already in this Crate. To change the win chance use &f/editchance&7.'
-at_least_one: '&7You must enter a value of at least 1.'
+to_low_or_to_high: '&7You must enter a value from 1-%highest%.' # *8
+no_items_available: '&cYou can not win items from this crate.'
 not_under_zero: '&7You must enter a value of at least 0.'
 crate_opening_received: '&7You received a &fCrate Opening&7.'
 opening: '&8is being opened...'
@@ -53,9 +53,13 @@ removefromcrate_done: '&7Item &f%id% &7has been removed from crate &f%crate%&7.'
 editchance_syntax: '&f/editchance &7<&fCrate&7> <&fItem-ID&7> <&fNew chance in %&7>'
 editchance_done: '&7Win chance for Item &f%id% &7from Crate &f%crate% &7has been changed to &f%chance%%&7.' # *1, *2, *3
 
-bindcommand_syntax: '&f/bindcommand &7<&fCrate&7> <&fItem-ID&7> <&fCommand&7>'
-bindcommand_removed: '&7The command &f%command% &7was removed from Item &f%id% &7in Crate &f%crate%&7.' # *1, *2, *5
-bindcommand_done: 'The command &f%command% &7has been added to Item &f%id% &7in Crate &f%crate%' # *1, *2, *5
+bindcommand_syntax: '&f/bindcommand &7<&fCrate&7> <&fItem-ID&7> <&fadd&7/&fremove&7/&finfo&7> [&fCommand&7]'
+bindcommand_add: '&7The command &f%command% &7has been added to Item &f%id% &7in Crate &f%crate%&7.' # *1, *2, *5
+bindcommand_removed: '&7The command &f%command% &7has been removed from Item &f%id% &7in Crate &f%crate%&7.' # *1, *2, *5
+bindcommand_already_added: '&fThis item already contains this command.'
+bindcommand_cannot_remove: '&fThis item does not contain this command.'
+bindcommand_info: '&7Commands from Item &f%id% &7in Crate &f%crate%&7:'
+bindcommand_empty: '&7This item does not contain any commands.'
 
 bindcommand_help: # Will be displayed above the syntax. The placeholders have no impact here.
   - '&7Placeholders:'
@@ -63,7 +67,6 @@ bindcommand_help: # Will be displayed above the syntax. The placeholders have no
   - '&c%player% &8» &fThe player who opened the crate'
   - '&c%chance% &8» &fThe win chance of the won item'
   - ' '
-  - '&fUse "#remove" as 3rd argument to remove the command.'
 
 setvirtual_syntax: '&f/setvirtual &7<&fCrate&7> <&fItem-ID&7> <&ftrue&7/&ffalse&7>'
 setvirtual_warning: '&cWarning: &7Without a bound command, the player will not get a win. Add one with &f/bindcommand.'

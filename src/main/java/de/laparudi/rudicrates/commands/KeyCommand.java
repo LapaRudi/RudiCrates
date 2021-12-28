@@ -33,7 +33,7 @@ public class KeyCommand implements CommandExecutor, TabCompleter {
             final UUID uuid = UUIDFetcher.getUUID(args[1]);
             final String name = UUIDFetcher.getName(uuid);
             
-            if(uuid == null || name == null || RudiCrates.getPlugin().getDataUtils().playerExists(uuid)) {
+            if(uuid == null || name == null || !RudiCrates.getPlugin().getDataUtils().playerExists(uuid)) {
                 sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownPlayer);
                 return true;
             }
@@ -41,8 +41,8 @@ public class KeyCommand implements CommandExecutor, TabCompleter {
             final Player target = Bukkit.getPlayer(uuid);
             
             if (args[0].equalsIgnoreCase("info")) {
+                sender.sendMessage(RudiCrates.getPlugin().getLanguage().keyHeader.replace("%player%", name));
                 sender.sendMessage("");
-                sender.sendMessage(RudiCrates.getPlugin().getLanguage().keyHeader);
                 
                 Arrays.stream(RudiCrates.getPlugin().getCrateUtils().getCrates()).forEach(crate -> {
                     final int keyAmount = target != null ? RudiCrates.getPlugin().getCrateUtils().getKeyItemAmount(target, crate) +
@@ -75,8 +75,8 @@ public class KeyCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
 
-            if (amount < 1) {
-                sender.sendMessage(RudiCrates.getPlugin().getLanguage().atLeastOne);
+            if (amount < 1 || amount > RudiCrates.getPlugin().getConfig().getInt("max_key_amount")) {
+                sender.sendMessage(RudiCrates.getPlugin().getLanguage().toLowOrToHigh.replace("%highest%", String.valueOf(RudiCrates.getPlugin().getConfig().getInt("max_key_amount"))));
                 return true;
             }
 

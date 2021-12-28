@@ -192,11 +192,16 @@ public class CrateUtils {
             return;
         }
 
+        if(chancesResult.get(crate.getName()) == 0) {
+            player.sendMessage(RudiCrates.getPlugin().getLanguage().noItemsAvailable);
+            return;
+        }
+        
         if (chances == null || chances.entrySet().isEmpty()) {
             player.sendMessage(RudiCrates.getPlugin().getLanguage().incorrectWinChances);
             return;
         }
-
+        
         final double random = ThreadLocalRandom.current().nextDouble(0, chancesResult.get(crate.getName()));
         for (Map.Entry<ItemStack, Double[]> entry : chances.entrySet()) {
             Double[] doubles = entry.getValue();
@@ -223,13 +228,13 @@ public class CrateUtils {
                 Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> {
                     final TranslatableComponent display = item.getItemMeta() != null && item.getItemMeta().hasDisplayName() ? new TranslatableComponent(item.getItemMeta().getDisplayName()) : RudiCrates.getPlugin().getTranslationUtils().getTranslation(item.getType());
                     display.setColor(ChatColor.GOLD);
-                    String command = crateConfig.getString(id + ".command");
+                    List<String> commands = crateConfig.getStringList(id + ".commands");
 
-                    if (command != null) {
-                        command = replace(command, "%player%", player.getName());
-                        command = replace(command, "%crate%", crate.getDisplayname());
-                        command = replace(command, "%chance%", chance + "%");
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), ChatColor.translateAlternateColorCodes('&', command));
+                    if (!commands.isEmpty()) {
+                        commands = replace(commands, "%player%", player.getName());
+                        commands = replace(commands, "%crate%", crate.getDisplayname());
+                        commands = replace(commands, "%chance%", chance + "%");
+                        commands.forEach(command -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), ChatColor.translateAlternateColorCodes('&', command)));
                     }
 
                     if (!crateConfig.getBoolean(id + ".virtual")) player.getInventory().addItem(item);
@@ -316,11 +321,17 @@ public class CrateUtils {
         return component;
     }
     
-    public String replace(String input, String placeholder, String replace) {
-        if(input.contains(placeholder)) {
-            return input.replace(placeholder, replace);
-        }
-        return input;
+    public List<String> replace(List<String> list, String placeholder, String replace) {
+        final List<String> newList = new ArrayList<>();
+        
+        list.forEach(string -> {
+            if(string.contains(placeholder)) {
+                newList.add(string.replace(placeholder, replace));
+            } else
+                newList.add(string);
+        });
+        
+        return newList;
     }
     
     public void loadChancesResult() {
@@ -334,7 +345,6 @@ public class CrateUtils {
             }
             
             chancesResult.put(crate.getName(), amount);
-            Bukkit.broadcastMessage("put " + amount + " in for crate " + crate.getName());
         });
     }
     

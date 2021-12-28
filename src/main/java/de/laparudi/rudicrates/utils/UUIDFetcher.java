@@ -20,11 +20,6 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class UUIDFetcher {
-
-    private static RudiCrates plugin;
-    public UUIDFetcher(RudiCrates plugin) {
-        UUIDFetcher.plugin = plugin;
-    }
     
     private static final Gson gson = new GsonBuilder().registerTypeAdapter(UUID.class, new UUIDTypeAdapter()).create();
 
@@ -63,7 +58,7 @@ public class UUIDFetcher {
             return data.id;
 
         } catch (Exception e) {
-            Bukkit.getConsoleSender().sendMessage(plugin.getLanguage().uuidFetcherExceptionUUID.replace("%player%", name));
+            Bukkit.getConsoleSender().sendMessage(RudiCrates.getPlugin().getLanguage().uuidFetcherExceptionUUID.replace("%player%", name));
         }
 
         return null;
@@ -99,7 +94,7 @@ public class UUIDFetcher {
             return currentNameData.name;
 
         } catch (Exception e) {
-            Bukkit.getConsoleSender().sendMessage(plugin.getLanguage().uuidFetcherExceptionName.replace("%player%", uuid.toString()));
+            Bukkit.getConsoleSender().sendMessage(RudiCrates.getPlugin().getLanguage().uuidFetcherExceptionName.replace("%player%", uuid.toString()));
         }
 
         return null;

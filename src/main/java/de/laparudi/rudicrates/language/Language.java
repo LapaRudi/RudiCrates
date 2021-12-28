@@ -53,15 +53,15 @@ public class Language {
     public final String noCratesRemaining = getValue("no_crates_remaining", true);
     public final String noWinsInCrate = getValue("no_wins_in_crate", true);
     public final String noWinsInCrateAddon = getValue("no_wins_in_crate_addon", true);
+    public final String noItemsAvailable = getValue("no_items_available", true);
     
     public final String unknownPlayer = getValue("unknown_player", true);
     public final String unknownCrate = getValue("unknown_crate", true);
     public final String unknownID = getValue("unknown_id", true);
     
     public final String itemAlreadyInCrate = getValue("item_already_in_crate", true);
-    public final String atLeastOne = getValue("at_least_one", true);
+    public final String toLowOrToHigh = getValue("to_low_or_to_high", true);
     public final String notUnderZero = getValue("not_under_zero", true);
-    public final String noBoundCommand = getValue("no_bound_command", true);
     public final String crateOpeningReceived = getValue("crate_opening_received", true);
     
     public final String reloadAll = getValue("reload_all", true);
@@ -85,7 +85,11 @@ public class Language {
     public final List<String> bindCommandHelp = getListValue("bindcommand_help", true);
     public final String bindCommandSyntax = getValue("bindcommand_syntax", true);
     public final String bindCommandRemoved = getValue("bindcommand_removed", true);
-    public final String bindCommandDone = getValue("bindcommand_done", true);
+    public final String bindCommandAdd = getValue("bindcommand_add", true);
+    public final String bindCommandAlreadyAdded = getValue("bindcommand_already_added", true);
+    public final String bindCommandCannotRemove = getValue("bindcommand_cannot_remove", true);
+    public final String bindCommandInfo = getValue("bindcommand_info", true);
+    public final String bindCommandEmpty = getValue("bindcommand_empty", true);
 
     public final String setVirtualSyntax = getValue("setvirtual_syntax", true);
     public final String setVirtualWarning = getValue("setvirtual_warning", true);
@@ -134,7 +138,7 @@ public class Language {
     public final String uuidFetcherExceptionUUID = getValue("uuidfetcher_exeption_uuid", true);
     public final String uuidFetcherExceptionName  = getValue("uuidfetcher_exeption_name", true);
     
-    // Items
+    // Items 109-20 89
     public final String backItemName = getValue("item_back_name", false);
     public final String closeMenuItemName = getValue("item_closemenu_name", false);
     public final String previousPageItemName = getValue("item_previouspage_name", false);

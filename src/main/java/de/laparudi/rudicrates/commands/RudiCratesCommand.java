@@ -108,6 +108,7 @@ public class RudiCratesCommand implements CommandExecutor, TabCompleter {
                 case "preview":
                     RudiCrates.getPlugin().getInventoryUtils().loadPreviewInventories();
                     RudiCrates.getPlugin().getCrateUtils().loadChancesResult();
+                    Crate.reloadCrateMaps();
                     sender.sendMessage(RudiCrates.getPlugin().getLanguage().reloadPreview);
                     break;
             }

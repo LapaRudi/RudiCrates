@@ -1,4 +1,4 @@
-# RudiCrates v0.9.2 Config
+# RudiCrates v0.9.4 Config
 # 
 # The opening of crates is disabled by default, set the crates you want to use
 # in the 'crates:' section first.
@@ -63,6 +63,9 @@ fillitem:
   name: ''
   enchanted: false
   durability: 0 # <- For 1.8.8 + 1.12.2
+  
+# The highest amount of keys that can be given with /key
+max_key_amount: 100
   
 # Crate settings
 # The wins of the crates will be saved in .yml files with the name of the crate.
