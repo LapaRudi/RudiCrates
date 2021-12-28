@@ -15,6 +15,8 @@ RudiCrates Crate-Opening
 
 Soon:
 - More crate animations
+- Auto updating config if a new option gets added
+- Durability option for 1.8.8 + 1.12.2
 
 *Not tested yet
 
