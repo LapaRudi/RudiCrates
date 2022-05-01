@@ -1,29 +1,31 @@
-# RudiCrates v0.9.4 Config
+# RudiCrates v0.9.5 Config
 # 
 # The opening of crates is disabled by default, set the crates you want to use
 # in the 'crates:' section first.
 #
-# 
+# When using color codes, write text within apostrophes. ( e.g. menu_title: '&cCrate Opening' ) 
+#
 #                                [Example]
 # crates:
-#   gold:                          - The crate-name (used for ingame commands)
+#   gold:                          - The crate-name (used for in-game commands)
 #     displayname: '&6Gold-Crate'  - The crate-displayname der Crate (shown in the crate-menu)
 #     material: 'GOLD_BLOCK'       - The material of the crate-item in the crate menu
 #     slot: 15                     - The slot of the crate-item
 #
-#     key:                         - Section for not-virtual keys
-#       material:                  - Material of the key
-#       name:                      - Name of the key
-#       enchant:                   - Visual enchantment (true/false)
+#     key:                         - Section for non-virtual keys
+#       material: 'TRIPWIRE_HOOK'  - Material of the key
+#       name: '&6Gold-Crate Key'   - Name of the key
+#       enchant: true              - Visual enchantment (true/false)
 #       lore:                      - Lore of the key
+#         - '&3you can open a'
+#         - '&6Gold-Crate with this key' 
 #
-# Liste für Materialien [1.16.5] -> https://helpch.at/docs/1.16.5/org/bukkit/Material.html
-
-
+# List of Materials [1.16.5] -> https://helpch.at/docs/1.16.5/org/bukkit/Material.html
+#
+#
 # When 'usemysql' is false, the crates (keys) will be saved in .yml files.
-# Die table and the database will be created if they not exist.
+# MySQL table and database will be created if they not exist.
 usemysql: false
-
 mysql:
   host: '127.0.0.1'
   port: 3306
@@ -31,79 +33,96 @@ mysql:
   password: 'password'
   database: 'rudicrates'
   
-# A message will be sent to all players, when an item gets pulled with this chance or less.
-broadcast: 5.0
-# for limited items
-broadcastlimited: 5.0
-# # A firework will be spawned above the player, when an item gets pulled with this chance or less.
-firework: 10.0
+pull_events:
+  # The message (crates.self/other.broadcast) will be sent to all online players, when an item gets pulled with this chance or less.
+  broadcast: 5.0
+  # Broadcast for limited items (crates.self/other.limited) will be sent to all online players.
+  limited: 5.0
+  # A firework will be spawned above the player who opened the crate, when an item gets pulled with this chance or less.
+  firework: 10.0
 
-# Removes limited items automaticly from the crate, when the limitation is reached.
-removelimiteditems: false
+inventories:
+  menu_title: '<#value#>'
+  menu_rows: 3 # (1-6)
 
-# Inventory name of the crate-menü
-inventorytitle: 'Crate Opening ⚄'
+# For 1.8.8 users: \u2684 is a die, \u2193 is an arrow facing down
 
-# Inventory rows (1-6)
-inventoryrows: 5
-
-# Puts a red glass pane into the crate-menu to close it
-usecloseinventory: false
-closeinventoryslot: 45
+items:
+  # Puts a red glass pane into the crate-menu to close it
+  use_close: true
+  close_slot: 27
+  close:
+    name: '&cClose menu'
+    material: '<#value#>'
+    enchant: false
+    durability: 14
   
-# Will be displayed while a crate is beeing opened
-windisplayitem: 'HOPPER'
-windisplayname: '§c↓ §6Your win §c↓'
-windisplayitemenchant: true
-
-# Empty slots in the crate-menu will be filled by with this item
-usefillitem: true
-fillitem:
-  material: 'GRAY_STAINED_GLASS_PANE'
-  name: ''
-  enchanted: false
-  durability: 0 # <- For 1.8.8 + 1.12.2
+  # Empty slots in the crate-menu will be filled with this item
+  use_fill: true
+  fill:
+    name: ' '
+    material: '<#value#>'
+    enchant: false
+    durability: 15
   
+  # Item on the 5. slot, displayed while opening a crate
+  display: 
+    name: '<#value#>'
+    material: 'HOPPER'
+    enchant: true
+
+# Removes limited items automatically from the crate, when the limitation is reached.
+remove_limited_items: false
+
+# Files of crates wich are not in use (not listed under 'crates.') will be deleted.
+delete_unused_crate_files: false
+
+# Enables / Disables item-keys
+use_item_keys: true
+
 # The highest amount of keys that can be given with /key
 max_key_amount: 100
-  
+
+# The highest amount of items that can be put in a crate. (values above 1000 are not recommended)
+max_items_per_crate: 250
+
 # Crate settings
 # The wins of the crates will be saved in .yml files with the name of the crate.
-# Wins can be added ingame. More information with the command '/rc help'.
+# Wins can be added in-game. More information with the command '/rc help'.
 # (The win chances do not have to add up to 100)
 #
-# Restart the plugin after you added the crates. RudiCrates will create the .yml files for the crates.
-# When you added items to your crates (ingame with /addtocrate), set 'enabled' to true.
+# Restart the plugin after you added the crates, RudiCrates will create the .yml files for them.
+# When you added items to your crates (/addtocrate), set 'enabled' to true or use '/rc toggle'.
 
 crates:
   
   wood:
     displayname: '&eWood Crate'
-    material: 'LOG'
+    material: '<#value#>'
     slot: 11
     key:
       material: 'TRIPWIRE_HOOK'
       name: '&eWood-Crate Key'
       enchant: false
       lore:
-        - '§6Opens a wood crate'
+        - '&6Opens a wood crate'
 
   iron:
     displayname: '&f&lIron Crate'
     material: 'IRON_BLOCK'
-    slot: 14
+    slot: 13
     key:
       material: 'TRIPWIRE_HOOK'
       name: '&f&lIron-Crate Key'
       enchant: true
       lore:
         - '&6Opens an iron crate'
-        - '§c- Example Test'
+        - '&c- Example Text'
 
   diamond:
     displayname: '&b&oDiamond Crate'
     material: 'DIAMOND_BLOCK'
-    slot: 17
+    slot: 15
     key:
       material: 'DIAMOND'
       name: '&bDiamond Key'
@@ -116,5 +135,5 @@ crates:
 
 # Enables / Disables the opening of crates
 # useful to avoid errors while adding items etc.
-# (can also be changed ingame via /rc toggle) *currently disabled
+# (can also be changed in-game via /rc toggle)
 enabled: false

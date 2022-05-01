@@ -1,7 +1,8 @@
 package de.laparudi.rudicrates.commands;
 
-import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.Crate;
+import de.laparudi.rudicrates.crate.CrateUtils;
+import de.laparudi.rudicrates.language.Language;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -13,7 +14,6 @@ import org.bukkit.util.StringUtil;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,12 +22,12 @@ public class RemoveFromCrateCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
         if (!(sender.hasPermission("rudicrates.removefromcrate"))) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().noPermission);
+            Language.send(sender, "player.no_permission");
             return true;
         }
 
         if (args.length != 2) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().removeFromCrateSyntax);
+            Language.send(sender, "commands.removefromcrate.syntax");
             return true;
         }
 
@@ -35,8 +35,8 @@ public class RemoveFromCrateCommand implements CommandExecutor, TabCompleter {
 
         try {
             crate = Crate.getByName(args[0]);
-        } catch (NullPointerException e) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownCrate);
+        } catch (final NullPointerException exception) {
+            Language.send(sender, "crate.unknown");
             return true;
         }
 
@@ -45,13 +45,13 @@ public class RemoveFromCrateCommand implements CommandExecutor, TabCompleter {
 
         try {
             id = Integer.parseInt(args[1]);
-        } catch (NumberFormatException e) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().noNumber);
+        } catch (final NumberFormatException exception) {
+            Language.send(sender, "numbers.invalid");
             return true;
         }
 
         if (!config.getKeys(false).contains(String.valueOf(id))) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownID);
+            Language.send(sender, "crate.unknown_id");
             return true;
         }
 
@@ -59,9 +59,9 @@ public class RemoveFromCrateCommand implements CommandExecutor, TabCompleter {
 
         try {
             config.save(crate.getFile());
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().removeFromCrateDone.replace("%id%", String.valueOf(id)).replace("%crate%", crate.getName()));
-        } catch (IOException e) {
-            e.printStackTrace();
+            Language.send(sender, "commands.removefromcrate.done", new String[] { "%id%", "%crate%" }, new String[] { String.valueOf(id), crate.getName() });
+        } catch (final IOException exception) {
+            exception.printStackTrace();
         }
 
         return true;
@@ -69,18 +69,17 @@ public class RemoveFromCrateCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if (!sender.hasPermission("rudicrates.addtocrate")) return Collections.emptyList();
+        if (!sender.hasPermission("rudicrates.removefromcrate")) return Collections.emptyList();
         final List<String> complete = new ArrayList<>();
-        final List<String> crateArgs = new ArrayList<>();
-        Arrays.stream(RudiCrates.getPlugin().getCrateUtils().getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
+        final List<String> crateArgs = CrateUtils.getCrateNames();
 
         if (args.length == 1) {
             StringUtil.copyPartialMatches(args[0], crateArgs, complete);
             return complete;
-        }
-
-        if (args.length == 2) {
-            final FileConfiguration config = YamlConfiguration.loadConfiguration(Crate.getByName(args[0]).getFile());
+            
+        } else if (args.length == 2) {
+            final FileConfiguration config = Crate.getCrateConfigMap().get(args[0]);
+            if (config == null) return Collections.emptyList();
             StringUtil.copyPartialMatches(args[1], config.getKeys(false), complete);
             return complete;
         }

@@ -5,7 +5,7 @@ package de.laparudi.rudicrates.utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.util.UUIDTypeAdapter;
-import de.laparudi.rudicrates.RudiCrates;
+import de.laparudi.rudicrates.language.Language;
 import org.bukkit.Bukkit;
 
 import java.io.BufferedReader;
@@ -15,9 +15,10 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.function.Consumer;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class UUIDFetcher {
     
@@ -29,74 +30,66 @@ public class UUIDFetcher {
     private static final Map<String, UUID> uuidCache = new HashMap<>();
     private static final Map<UUID, String> nameCache = new HashMap<>();
 
-    private static final ExecutorService pool = Executors.newCachedThreadPool();
+    private final String name;
+    private final UUID id;
 
-    private String name;
-    private UUID id;
-
-    /**
-     * Fetches the uuid asynchronously and passes it to the consumer
-     *
-     * @param name   The name
-     * @param action Do what you want to do with the uuid her
-     */
-    public static void getUUID(String name, Consumer<UUID> action) {
-        pool.execute(() -> action.accept(getUUID(name)));
+    public UUIDFetcher(final String name, final UUID id) {
+        this.name = name;
+        this.id = id;
     }
 
-    public static UUID getUUID(String name) {
-        name = name.toLowerCase();
-        if (uuidCache.containsKey(name)) return uuidCache.get(name);
-
-        try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(UUID_URL + name).openConnection();
-            connection.setReadTimeout(2000);
-            UUIDFetcher data = gson.fromJson(new BufferedReader(new InputStreamReader(connection.getInputStream())), UUIDFetcher.class);
-
-            uuidCache.put(name, data.id);
-            nameCache.put(data.id, data.name);
-            return data.id;
-
-        } catch (Exception e) {
-            Bukkit.getConsoleSender().sendMessage(RudiCrates.getPlugin().getLanguage().uuidFetcherExceptionUUID.replace("%player%", name));
+    public static UUID getUUID(final String username) {
+        if (uuidCache.containsKey(username.toLowerCase())) {
+            return uuidCache.get(username.toLowerCase());
         }
-
-        return null;
+        
+        try {
+            return getAsyncUUID(username).get(5000, TimeUnit.MILLISECONDS);
+        } catch (final ExecutionException | InterruptedException | TimeoutException exception) {
+            Language.send(Bukkit.getConsoleSender(), "uuidfetcher.exception_uuid", "%player%", username);
+            return null;
+        }
     }
+    
+    private static CompletableFuture<UUID> getAsyncUUID(final String username) {
+        final String name = username.toLowerCase();
+        
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                final HttpURLConnection connection = (HttpURLConnection) new URL(UUID_URL + name).openConnection();
+                connection.setReadTimeout(5000);
+                final UUIDFetcher data = gson.fromJson(new BufferedReader(new InputStreamReader(connection.getInputStream())), UUIDFetcher.class);
 
-    /**
-     * Fetches the name asynchronously and passes it to the consumer
-     *
-     * @param uuid   The uuid
-     * @param action Do what you want to do with the name her
-     */
-    public static void getName(UUID uuid, Consumer<String> action) {
-        pool.execute(() -> action.accept(getName(uuid)));
+                uuidCache.put(name, data.id);
+                nameCache.put(data.id, data.name);
+                return data.id;
+
+            } catch (final Exception exception) {
+                Language.send(Bukkit.getConsoleSender(), "uuidfetcher.exception_uuid", "%player%", name);
+                return null;
+            }
+        });
     }
-
-    /**
-     * Fetches the name synchronously and returns it
-     *
-     * @param uuid The uuid
-     * @return The name
-     */
-    public static String getName(UUID uuid) {
+    
+    public static String getName(final UUID uuid) {
         if (nameCache.containsKey(uuid)) return nameCache.get(uuid);
 
-        try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(String.format(NAME_URL, UUIDTypeAdapter.fromUUID(uuid))).openConnection();
-            connection.setReadTimeout(2000);
-            UUIDFetcher[] nameHistory = gson.fromJson(new BufferedReader(new InputStreamReader(connection.getInputStream())), UUIDFetcher[].class);
-            UUIDFetcher currentNameData = nameHistory[nameHistory.length - 1];
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                final HttpURLConnection connection = (HttpURLConnection) new URL(String.format(NAME_URL, UUIDTypeAdapter.fromUUID(uuid))).openConnection();
+                connection.setReadTimeout(2000);
+                final UUIDFetcher[] nameHistory = gson.fromJson(new BufferedReader(new InputStreamReader(connection.getInputStream())), UUIDFetcher[].class);
+                final UUIDFetcher currentNameData = nameHistory[nameHistory.length - 1];
 
-            uuidCache.put(currentNameData.name.toLowerCase(), uuid);
-            nameCache.put(uuid, currentNameData.name);
-            return currentNameData.name;
+                uuidCache.put(currentNameData.name.toLowerCase(), uuid);
+                nameCache.put(uuid, currentNameData.name);
+                return currentNameData.name;
 
-        } catch (Exception e) {
-            Bukkit.getConsoleSender().sendMessage(RudiCrates.getPlugin().getLanguage().uuidFetcherExceptionName.replace("%player%", uuid.toString()));
-        }
-
+            } catch (final Exception exception) {
+                Language.send(Bukkit.getConsoleSender(), "uuidfetcher.exception_name", "%player%", uuid.toString());
+            }
+            return null;
+        });
         return null;
     }
 }

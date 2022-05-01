@@ -1,6 +1,8 @@
 package de.laparudi.rudicrates.listeners;
 
 import de.laparudi.rudicrates.RudiCrates;
+import de.laparudi.rudicrates.crate.CrateUtils;
+import de.laparudi.rudicrates.language.Language;
 import de.laparudi.rudicrates.utils.LocationNameUtils;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -10,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
 import java.util.List;
@@ -26,6 +29,13 @@ public class CrateBreakListener implements Listener {
         final String location = LocationNameUtils.toLocationString(event.getBlock().getLocation());
 
         if (!list.contains(location)) return;
+        final ItemStack item = RudiCrates.getPlugin().getVersionUtils().getPlayersItemInHand(player);
+        
+        if (CrateUtils.keyItems.stream().anyMatch(keyItem -> keyItem.isSimilar(item))) {
+            event.setCancelled(true);
+            return;
+        }
+        
         list.remove(location);
         locations.set("locations", list);
         locations.save(RudiCrates.getPlugin().getLocationsFile());
@@ -36,7 +46,7 @@ public class CrateBreakListener implements Listener {
         if (player.getGameMode() != GameMode.CREATIVE) {
             event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), RudiCrates.getPlugin().getItemManager().crateBlock);
         }
-        
-        player.sendMessage(RudiCrates.getPlugin().getLanguage().crateOpeningRemoved);
+
+        Language.send(player, "listeners.crateblock.removed");
     }
 }

@@ -6,12 +6,12 @@
 
     <groupId>de.laparudi</groupId>
     <artifactId>RudiCrates</artifactId>
-    <version>0.9.4</version>
+    <version>0.9.5</version>
     <packaging>jar</packaging>
 
     <name>RudiCrates</name>
 
-    <description>Case Opening</description>
+    <description>Crate-Opening</description>
     <properties>
         <java.version>11</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

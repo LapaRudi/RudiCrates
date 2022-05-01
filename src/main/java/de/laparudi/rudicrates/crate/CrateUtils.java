@@ -1,94 +1,97 @@
 package de.laparudi.rudicrates.crate;
 
 import de.laparudi.rudicrates.RudiCrates;
-import de.laparudi.rudicrates.utils.LocationNameUtils;
-import de.laparudi.rudicrates.utils.items.ItemBuilder;
+import de.laparudi.rudicrates.data.Bundle;
+import de.laparudi.rudicrates.language.Language;
+import de.laparudi.rudicrates.language.TranslationUtils;
+import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.TranslatableComponent;
-import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
+import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
+import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Stream;
 
 public class CrateUtils {
+
+    public static final List<UUID> currentlyOpening = new ArrayList<>();
+    public static final List<ItemStack> keyItems = new ArrayList<>();
+    public static final Map<UUID, Location> inCrateMenu = new HashMap<>();
+    private static final Map<String, Double> chancesResult = new HashMap<>();
     
-    public static List<UUID> currentlyOpening = new ArrayList<>();
-    public static List<ItemStack> keyItems = new ArrayList<>();
-    public static Map<UUID, Location> inCrateMenu = new HashMap<>();
-    private final static Map<String, Double> chancesResult = new HashMap<>();
+    private static final @Getter List<String> crateNames = new ArrayList<>();
+    private static @Getter Crate[] crates;
     
-    public final BaseComponent componentPrefix() {
-        if(RudiCrates.getPlugin().getServerVersion().contains("1.16")) {
-            return arrayToSingleComponent(new ComponentBuilder("[").color(ChatColor.of("#494242"))
-                .append("R").color(ChatColor.of("#970460")).append("u").color(ChatColor.of("#96297b")).append("d").color(ChatColor.of("#914195"))
-                .append("i").color(ChatColor.of("#8755ac")).append("C").color(ChatColor.of("#7968c0")).append("r").color(ChatColor.of("#677ad0"))
-                .append("a").color(ChatColor.of("#538adc")).append("t").color(ChatColor.of("#3c9ae5")).append("e").color(ChatColor.of("#24a9ea"))
-                .append("s").color(ChatColor.of("#18b7ec")).append("] ").color(ChatColor.of("#494242")).create());
-        }
-        return new TextComponent("§8[§4Rudi§5Crates§8] §r");
+    public static void loadCrates() {
+        final List<Crate> list = new ArrayList<>();
+        final ConfigurationSection section = RudiCrates.getPlugin().getConfig().getConfigurationSection("crates");
+        if (section == null) return;
+        
+        section.getKeys(false).forEach(key -> {
+            try {
+                final Crate crate = Crate.getByName(key);
+                crateNames.add(key);
+                list.add(crate);
+                keyItems.add(RudiCrates.getPlugin().getItemManager().getCrateKeyItem(crate, 1));
+
+            } catch (final NullPointerException exception) {
+                Language.send(Bukkit.getConsoleSender(), "crates.incomplete", "%crate%", key);
+            }
+        });
+        
+        crates = list.toArray(Crate[]::new);
     }
 
-    public final Crate[] getCrates() {
-        final List<Crate> list = new ArrayList<>();
-        
-        for(String key : RudiCrates.getPlugin().getConfig().getKeys(true)) {
-            if(!key.startsWith("crates.")) continue;
-            key = key.replaceFirst("crates.", "");
-            if(key.contains(".")) continue;
-            list.add(Crate.getByName(key));
-        }
-        
-        return list.toArray(Crate[]::new);
-    }
-    
-    private ItemStack getRandomItem(Crate crate) {
-        if(crate.getMap().isEmpty()) return null;
+    @Nonnull
+    private Bundle<ItemStack, Integer> getRandomItem(final Crate crate) {
         final double random = ThreadLocalRandom.current().nextDouble(chancesResult.get(crate.getName()));
-        
-        for(Map.Entry<ItemStack, Double[]> entry : crate.getMap().get(crate.getName()).entrySet()) {
+
+        for (final Map.Entry<ItemStack, Double[]> entry : Crate.getMap().get(crate.getName()).entrySet()) {
             final Double[] doubles = entry.getValue();
-            
-            if(doubles[0] <= random && doubles[1] >= random) {
-                return entry.getKey();
+
+            if (doubles[0] <= random && doubles[1] >= random) {
+                return Bundle.of(entry.getKey(), doubles[2].intValue());
             }
         }
-        return null;
+
+        return Bundle.of(RudiCrates.getPlugin().getItemManager().error, -1);
     }
-    
+
     private int task;
     private int count = 0;
     private int delay = 1;
     private boolean loop = true;
-    
-    public void animation(Player player, Crate crate, int winningItemID) {
-        final Inventory animationInventory = Bukkit.createInventory(null, 27, crate.getDisplayname() + "§8 " + RudiCrates.getPlugin().getLanguage().opening);
+
+    public void animation(final Player player, final Crate crate, final int winningItemID) {
+        final Inventory animationInventory = Bukkit.createInventory(null, 27, Language.withoutPrefix("inventories.opening", "%crate%", crate.getDisplayname()));
         final FileConfiguration crateConfig = YamlConfiguration.loadConfiguration(crate.getFile());
         final ItemStack winningItem = crateConfig.getItemStack(winningItemID + ".item");
-        
+
         for (int i = 0; i < animationInventory.getSize(); i++) {
-            animationInventory.setItem(i, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).setName(" ").toItem());
+            animationInventory.setItem(i, RudiCrates.getPlugin().getItemManager().blackGlass);
         }
 
-        final ItemStack winIndicator = new ItemBuilder(Material.getMaterial(Objects.requireNonNull(RudiCrates.getPlugin().getConfig().getString("windisplayitem"))))
-                .setName(RudiCrates.getPlugin().getConfig().getString("windisplayname")).invisibleEnchant(RudiCrates.getPlugin().getConfig().getBoolean("windisplayitemenchant")).toItem();
+        final ItemStack winIndicator = RudiCrates.getPlugin().getVersionUtils().getConfigItem("items.display");
         animationInventory.setItem(4, winIndicator);
-        
+
         for (int i = 9; i < 18; i++) {
-            animationInventory.setItem(i, getRandomItem(crate));
+            animationInventory.setItem(i, this.getRandomItem(crate).getKey());
         }
 
         player.openInventory(animationInventory);
@@ -103,26 +106,27 @@ public class CrateUtils {
                         animationInventory.setItem(i - 1, item);
                     }
 
-                    if(delay == 12 && count == 1) {
+                    if (delay == 12 && count == 1) {
                         animationInventory.setItem(17, winningItem);
                     } else
-                        animationInventory.setItem(17, getRandomItem(crate));
-                    
+                        animationInventory.setItem(17, this.getRandomItem(crate).getKey());
+
                     player.playSound(player.getLocation(), RudiCrates.getPlugin().getVersionUtils().pling(), 1.0F, 0.8F);
                     count++;
-                    
+
                     if (count >= 2) {
                         count = delay <= 8 ? 0 : 1;
                         delay++;
-                        
+
                         if (delay >= 17) {
                             Bukkit.getScheduler().cancelTask(task);
-                            
+
                             Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> {
                                 player.playSound(player.getLocation(), RudiCrates.getPlugin().getVersionUtils().winSound(), 1.0F, 0.8F);
                                 delay = 2;
                                 this.finishAnimation(player, animationInventory);
                             }, 15);
+                            
                             return;
                         }
 
@@ -133,266 +137,239 @@ public class CrateUtils {
             }
         }
     }
-    
+
     private int finishTask;
     private int left = 12;
     private int right = 14;
-    
-    private void finishAnimation(Player player, Inventory inventory) {
+
+    private void finishAnimation(final Player player, final Inventory inventory) {
         left = 12;
         right = 14;
-        
+
         finishTask = Bukkit.getScheduler().scheduleSyncRepeatingTask(RudiCrates.getPlugin(), () -> {
-            if(left <= 8 && right >= 18) {
+            if (left <= 8 && right >= 18) {
                 Bukkit.getScheduler().cancelTask(finishTask);
-                
+
                 Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> {
                     currentlyOpening.remove(player.getUniqueId());
-                    if (!player.getOpenInventory().getTopInventory().isEmpty()) {
+
+                    if (player.getOpenInventory().getTopInventory().getType() != InventoryType.CRAFTING) {
                         RudiCrates.getPlugin().getInventoryUtils().openCrateMenu(player);
                     }
                 }, 40);
                 return;
             }
-            
+
             inventory.setItem(left, RudiCrates.getPlugin().getItemManager().greenGlass);
             inventory.setItem(right, RudiCrates.getPlugin().getItemManager().greenGlass);
             player.playSound(player.getLocation(), RudiCrates.getPlugin().getVersionUtils().blazeShoot(), 0.5F, 1.5F);
             left--;
             right++;
-            
+
         }, 10, 4);
     }
 
-    public void openCrate(Player player, Crate crate, boolean animation) {
+    public void openCrate(final Player player, final Crate crate, final boolean animation) {
         if (!RudiCrates.getPlugin().getConfig().getBoolean("enabled")) {
-            player.sendMessage(RudiCrates.getPlugin().getLanguage().crateOpeningDisabled);
+            Language.send(player, "crate.opening_disabled");
+            return;
+        }
+
+        if (player.getInventory().firstEmpty() == -1) {
+            Language.send(player, "player.inventory_full");
             return;
         }
 
         final UUID uuid = player.getUniqueId();
-        final boolean noVirtualCrates = RudiCrates.getPlugin().getDataUtils().getCrateAmount(uuid, crate) < 1;
-        final boolean noItemCrates = this.getKeyItemAmount(player, crate) < 1;
+        final boolean useItemKeys = RudiCrates.getPlugin().getConfig().getBoolean("use_item_keys");
+        final boolean hasVirtualKeys = RudiCrates.getPlugin().getDataUtils().getCrateAmount(uuid, crate) > 0;
+        final boolean hasItemKeys = this.getKeyItemAmount(player, crate, false) > 0;
 
-        if (noVirtualCrates && noItemCrates) {
-            player.sendMessage(RudiCrates.getPlugin().getLanguage().noCratesRemaining);
+        if (!useItemKeys && !hasVirtualKeys && hasItemKeys) {
+            player.sendMessage(Language.get("crate.no_remaining") + " " + Language.withoutPrefix("crate.no_remaining_addon"));
+            return;
+        }
+        
+        if (!hasVirtualKeys && !hasItemKeys) {
+            Language.send(player, "crate.no_remaining");
             return;
         }
 
         final FileConfiguration crateConfig = YamlConfiguration.loadConfiguration(crate.getFile());
-        final Map<ItemStack, Double[]> chances = crate.getMap().get(crate.getName());
+        final Map<ItemStack, Double[]> chances = Crate.getMap().get(crate.getName());
 
         if (crateConfig.getKeys(false).isEmpty()) {
-            player.sendMessage(RudiCrates.getPlugin().getLanguage().noWinsInCrate);
-
-            if (player.hasPermission("rudicrates.addtocrate")) {
-                player.sendMessage(RudiCrates.getPlugin().getLanguage().noWinsInCrateAddon);
-            }
-            
+            Language.send(player, "crate.empty");
+            if (player.hasPermission("rudicrates.addtocrate")) Language.send(player, "crate.empty_addon");
             return;
         }
 
-        if(chancesResult.get(crate.getName()) == 0) {
-            player.sendMessage(RudiCrates.getPlugin().getLanguage().noItemsAvailable);
+        if (chancesResult.get(crate.getName()) == 0) {
+            Language.send(player, "crate.no_items_available");
             return;
         }
-        
+
         if (chances == null || chances.entrySet().isEmpty()) {
-            player.sendMessage(RudiCrates.getPlugin().getLanguage().incorrectWinChances);
+            Language.send(player, "crate.incorrect_win_chances");
             return;
         }
-        
-        final double random = ThreadLocalRandom.current().nextDouble(0, chancesResult.get(crate.getName()));
-        for (Map.Entry<ItemStack, Double[]> entry : chances.entrySet()) {
-            Double[] doubles = entry.getValue();
 
-            if (doubles[0] <= random && doubles[1] >= random) {
-                final int id = doubles[2].intValue();
-                final double chance = crateConfig.getDouble(id + ".chance");
-                final ItemStack item = crateConfig.getItemStack(id + ".item");
-                final boolean limited = crateConfig.get(id + ".limited") != null;
+        final Bundle<ItemStack, Integer> randomItemBundle = this.getRandomItem(crate);
+        final int id = randomItemBundle.getValue();
+        final ItemStack item = randomItemBundle.getKey();
 
-                if (item == null) {
-                    player.sendMessage(RudiCrates.getPlugin().getLanguage().openingCancelled.replace("%id%", String.valueOf(id)));
-                    return;
-                }
+        final double chance = crateConfig.getDouble(id + ".chance");
+        final boolean limited = crateConfig.get(id + ".limited") != null;
 
-                int openDelay = 0;
-                final String amount = item.getAmount() > 1 ? item.getAmount() + "x " : "";
-
-                if (animation) {
-                    openDelay = 215;
-                    this.animation(player, crate, id);
-                }
-
-                Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> {
-                    final TranslatableComponent display = item.getItemMeta() != null && item.getItemMeta().hasDisplayName() ? new TranslatableComponent(item.getItemMeta().getDisplayName()) : RudiCrates.getPlugin().getTranslationUtils().getTranslation(item.getType());
-                    display.setColor(ChatColor.GOLD);
-                    List<String> commands = crateConfig.getStringList(id + ".commands");
-
-                    if (!commands.isEmpty()) {
-                        commands = replace(commands, "%player%", player.getName());
-                        commands = replace(commands, "%crate%", crate.getDisplayname());
-                        commands = replace(commands, "%chance%", chance + "%");
-                        commands.forEach(command -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), ChatColor.translateAlternateColorCodes('&', command)));
-                    }
-
-                    if (!crateConfig.getBoolean(id + ".virtual")) player.getInventory().addItem(item);
-
-                    if (limited) {
-                        BaseComponent component = new TextComponent();
-                        int limit = crateConfig.getInt(id + ".limited");
-                        crateConfig.set(id + ".limited", --limit);
-
-                        if (RudiCrates.getPlugin().getConfig().getDouble("broadcastlimited") >= chance) {
-                            component.addExtra(componentPrefix());
-                            component.addExtra(RudiCrates.getPlugin().getLanguage().win1.replace("%player%", player.getName()).replace("%amount%", amount));
-                            component.addExtra(display);
-                            component.addExtra(RudiCrates.getPlugin().getLanguage().winLimited.replace("%crate%", crate.getDisplayname()).replace("%chance%", String.valueOf(chance)).replace("%amount%", String.valueOf(limit)));
-
-                            for (Player players : Bukkit.getOnlinePlayers()) {
-                                players.spigot().sendMessage(component);
-                                players.playSound(players.getLocation(), RudiCrates.getPlugin().getVersionUtils().pling(), 1.0F, 1.0F);
-                            }
-
-                        } else {
-                            component.addExtra(componentPrefix());
-                            component.addExtra(RudiCrates.getPlugin().getLanguage().win1Self.replace("%amount%", amount));
-                            component.addExtra(display);
-                            component.addExtra(" " + RudiCrates.getPlugin().getLanguage().winLimited.replace("%crate%", crate.getDisplayname()).replace("%chance%", String.valueOf(chance)).replace("%amount%", String.valueOf(limit)));
-                            player.spigot().sendMessage(component);
-                        }
-
-                        if (limit < 1) {
-                            if (RudiCrates.getPlugin().getConfig().getBoolean("removelimiteditems")) {
-                                crateConfig.set(String.valueOf(id), null);
-                            }
-
-                            crate.getMap().get(crate.getName()).remove(item);
-                        }
-
-                        try {
-                            crateConfig.save(crate.getFile());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
-                        RudiCrates.getPlugin().getInventoryUtils().loadPreviewInventories();
-                    }
-
-                    if (chance <= RudiCrates.getPlugin().getConfig().getInt("firework")) spawnFirework(player);
-
-                    if (!limited && chance <= RudiCrates.getPlugin().getConfig().getDouble("broadcast")) {
-                        BaseComponent component = new TextComponent();
-                        component.addExtra(componentPrefix());
-                        component.addExtra(RudiCrates.getPlugin().getLanguage().win1.replace("%player%", player.getName()).replace("%amount%", amount));
-                        component.addExtra(display);
-                        component.addExtra(" " + RudiCrates.getPlugin().getLanguage().winBroadcast.replace("%player%", player.getName()).replace("%crate%", crate.getDisplayname()).replace("%chance%", String.valueOf(chance)));
-                        Bukkit.getOnlinePlayers().forEach(players -> players.spigot().sendMessage(component));
-
-                    } else if (!limited) {
-                        BaseComponent component = new TextComponent();
-                        component.addExtra(componentPrefix());
-                        component.addExtra(RudiCrates.getPlugin().getLanguage().win1Self.replace("%amount%", amount));
-                        component.addExtra(display);
-                        component.addExtra(RudiCrates.getPlugin().getLanguage().win.replace("%chance%", String.valueOf(chance)));
-                        player.spigot().sendMessage(component);
-                    }
-
-                    if (!noItemCrates) {
-                        this.removeKeyItem(player, crate);
-
-                    } else
-                        RudiCrates.getPlugin().getDataUtils().removeCrates(uuid, crate, 1);
-                    
-                    if (!animation) {
-                        Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> RudiCrates.getPlugin().getInventoryUtils().openCrateMenu(player), 2);
-                    }
-
-                }, openDelay);
-                break;
-            }
+        if (item.isSimilar(RudiCrates.getPlugin().getItemManager().error)) {
+            Language.send(player, "crate.opening_cancelled", "%id%", String.valueOf(id));
+            return;
         }
+
+        int openDelay = 0;
+        final String amount = item.getAmount() > 1 ? item.getAmount() + "x " : "";
+
+        if (animation) {
+            openDelay = 215;
+            this.animation(player, crate, id);
+        }
+
+        Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> {
+            final TranslatableComponent display = item.getItemMeta() != null && item.getItemMeta().hasDisplayName() ? new TranslatableComponent(item.getItemMeta().getDisplayName()) : RudiCrates.getPlugin().getTranslationUtils().getTranslation(item.getType());
+            display.setColor(ChatColor.GOLD);
+            List<String> commands = crateConfig.getStringList(id + ".commands");
+
+            if (!commands.isEmpty()) {
+                commands = this.replace(commands, "%player%", player.getName());
+                commands = this.replace(commands, "%crate%", crate.getDisplayname() + ChatColor.RESET);
+                commands = this.replace(commands, "%chance%", chance + "%");
+                commands.forEach(command -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), ChatColor.translateAlternateColorCodes('&', command)));
+            }
+
+            if (!crateConfig.getBoolean(id + ".virtual")) player.getInventory().addItem(item);
+
+            if (hasItemKeys && useItemKeys) {
+                this.removeKeyItem(player, crate);
+            } else
+                RudiCrates.getPlugin().getDataUtils().removeCrates(uuid, crate, 1);
+            
+            if (limited) {
+                int limit = crateConfig.getInt(id + ".limited");
+                crateConfig.set(id + ".limited", --limit);
+
+                if (RudiCrates.getPlugin().getConfig().getDouble("pull_events.limited") >= chance) {
+                    for (final Player players : Bukkit.getOnlinePlayers()) {
+                        players.spigot().sendMessage(RudiCrates.getPlugin().getTranslationUtils().getWinMessage(TranslationUtils.MessageType.BROADCAST_LIMITED, display, amount, chance, player.getName(), crate.getDisplayname(), limit));
+                        players.playSound(players.getLocation(), RudiCrates.getPlugin().getVersionUtils().pling(), 1.0F, 1.0F);
+                    }
+
+                } else {
+                    player.spigot().sendMessage(RudiCrates.getPlugin().getTranslationUtils().getWinMessage(TranslationUtils.MessageType.SELF_LIMITED, display, amount, chance, player.getName(), crate.getDisplayname(), limit));
+                }
+
+                if (limit < 1) {
+                    if (RudiCrates.getPlugin().getConfig().getBoolean("remove_limited_items")) {
+                        crateConfig.set(String.valueOf(id), null);
+                    }
+
+                    Crate.getMap().get(crate.getName()).remove(item);
+                }
+
+                try {
+                    crateConfig.save(crate.getFile());
+                } catch (final IOException exception) {
+                    exception.printStackTrace();
+                }
+
+                Crate.reloadCrateMaps();
+                this.loadChancesResult();
+                RudiCrates.getPlugin().getInventoryUtils().loadPreviewInventories();
+            }
+
+            if (chance <= RudiCrates.getPlugin().getConfig().getInt("pull_events.firework")) this.spawnFirework(player);
+
+            if (!limited && chance <= RudiCrates.getPlugin().getConfig().getDouble("pull_events.broadcast")) {
+                Bukkit.getOnlinePlayers().forEach(players -> players.spigot().sendMessage(RudiCrates.getPlugin().getTranslationUtils().getWinMessage(TranslationUtils.MessageType.BROADCAST, display, amount, chance, player.getName(), crate.getDisplayname(), 0)));
+
+            } else if (!limited) {
+                player.spigot().sendMessage(RudiCrates.getPlugin().getTranslationUtils().getWinMessage(TranslationUtils.MessageType.SELF, display, amount, chance, player.getName(), crate.getDisplayname(), 0));
+            }
+
+            if (!animation) {
+                Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> RudiCrates.getPlugin().getInventoryUtils().openCrateMenu(player), 2);
+            }
+
+        }, openDelay);
     }
 
-    private BaseComponent arrayToSingleComponent(BaseComponent[] array) {
-        BaseComponent component = new TextComponent();
-        Arrays.stream(array).forEach(component::addExtra);
-        return component;
-    }
-    
-    public List<String> replace(List<String> list, String placeholder, String replace) {
+    public List<String> replace(final List<String> list, final String placeholder, final String replace) {
         final List<String> newList = new ArrayList<>();
-        
+
         list.forEach(string -> {
-            if(string.contains(placeholder)) {
+            if (string.contains(placeholder)) {
                 newList.add(string.replace(placeholder, replace));
             } else
                 newList.add(string);
         });
-        
+
         return newList;
     }
-    
+
     public void loadChancesResult() {
         Arrays.stream(getCrates()).forEach(crate -> {
-            final FileConfiguration config = YamlConfiguration.loadConfiguration(crate.getFile());
+            final FileConfiguration crateConfig = YamlConfiguration.loadConfiguration(crate.getFile());
             double amount = 0;
-            
-            for (String key : config.getKeys(false)) {
-                if (config.get(key + ".limited") != null && config.getInt(key + ".limited") < 1) continue;
-                amount = amount + config.getDouble(key + ".chance");
+
+            for (final String key : crateConfig.getKeys(false)) {
+                if (crateConfig.get(key + ".limited") != null && crateConfig.getInt(key + ".limited") < 1) continue;
+                amount = amount + crateConfig.getDouble(key + ".chance");
             }
-            
+
             chancesResult.put(crate.getName(), amount);
         });
     }
-    
-    private void spawnFirework(Player player) {
-        Firework firework = (Firework) player.getWorld().spawnEntity(player.getLocation().add(0,2,0), EntityType.FIREWORK);
-        FireworkMeta meta = firework.getFireworkMeta();
+
+    private void spawnFirework(final Player player) {
+        final Firework firework = (Firework) player.getWorld().spawnEntity(player.getLocation().add(0, 2, 0), EntityType.FIREWORK);
+        final FireworkMeta meta = firework.getFireworkMeta();
         meta.setPower(0);
         meta.addEffect(FireworkEffect.builder().withFlicker().withColor(Color.MAROON).build());
         firework.setFireworkMeta(meta);
     }
-    
-    public boolean isCrateOpeningInventory(Player player) {
-        final Block target = player.getTargetBlock(null, 5);
-        if(!(target.getState() instanceof Chest)) return false;
 
-        final Chest chest = (Chest) target.getState();
-        final FileConfiguration config = YamlConfiguration.loadConfiguration(RudiCrates.getPlugin().getLocationsFile());
-        final List<String> locations = config.getStringList("locations");
-        return locations.contains(LocationNameUtils.toLocationString(chest.getLocation()));
-    }
-    
-    public void setupKeyItemList() {
-        keyItems.clear();
-        Arrays.stream(getCrates()).forEach(crate -> keyItems.add(RudiCrates.getPlugin().getItemManager().getCrateKeyItem(crate, 1)));
-    }
-    
-    public int getKeyItemAmount(Player player, Crate crate) {
+    public int getKeyItemAmount(final Player player, final Crate crate, final boolean enderchest) {
         final ItemStack keyItem = RudiCrates.getPlugin().getItemManager().getCrateKeyItem(crate, 1);
+        final ItemStack[] inventory = player.getInventory().getContents();
+        final ItemStack[] withEnderchest = Stream.concat(Arrays.stream(inventory), Arrays.stream(player.getEnderChest().getContents())).toArray(ItemStack[]::new);
+        final ItemStack[] use = enderchest ? withEnderchest : inventory;
         int count = 0;
-        
-        for(ItemStack item : player.getInventory().getContents()) {
-            if(item == null) continue;
-            if(item.isSimilar(keyItem)) {
+
+        for (final ItemStack item : use) {
+            if (item == null) continue;
+            if (item.isSimilar(keyItem)) {
                 count = count + item.getAmount();
             }
         }
         
         return count;
     }
-    
-    public void removeKeyItem(Player player, Crate crate) {
-        if(this.getKeyItemAmount(player, crate) < 1) return;
-        for(ItemStack item : player.getInventory().getContents()) {
-            if(item == null) continue;
+
+    public void removeKeyItem(final Player player, final Crate crate) {
+        if (this.getKeyItemAmount(player, crate, false) < 1) return;
+        player.getInventory().removeItem(RudiCrates.getPlugin().getItemManager().getCrateKeyItem(crate, 1));
+    }
+}
+
+    /*
+        public void removeKeyItem(final Player player, final Crate crate) {
+        if (this.getKeyItemAmount(player, crate) < 1) return;
+        for (final ItemStack item : player.getInventory().getContents()) {
+            if (item == null) continue;
             
-            if(item.isSimilar(RudiCrates.getPlugin().getItemManager().getCrateKeyItem(crate, 1))) {
+            if (item.isSimilar(RudiCrates.getPlugin().getItemManager().getCrateKeyItem(crate, 1))) {
                 item.setAmount(item.getAmount() -1);
+                break;
             }
         }
     }
-}
+     */

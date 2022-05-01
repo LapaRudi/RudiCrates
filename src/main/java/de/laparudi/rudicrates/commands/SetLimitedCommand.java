@@ -1,7 +1,8 @@
 package de.laparudi.rudicrates.commands;
 
-import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.Crate;
+import de.laparudi.rudicrates.crate.CrateUtils;
+import de.laparudi.rudicrates.language.Language;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -13,7 +14,6 @@ import org.bukkit.util.StringUtil;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,12 +22,12 @@ public class SetLimitedCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
         if(!sender.hasPermission("rudicrates.setlimited")) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().noPermission);
+            Language.send(sender, "player.no_permission");
             return true;
         }
 
         if(args.length != 3) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().setLimitedSyntax);
+            Language.send(sender, "commands.setlimited.syntax");
             return true;
         }
 
@@ -36,15 +36,15 @@ public class SetLimitedCommand implements CommandExecutor, TabCompleter {
 
         try {
             crate = Crate.getByName(args[0]);
-        } catch (NullPointerException e) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownCrate);
+        } catch (final NullPointerException exception) {
+            Language.send(sender, "crate.unknown");
             return true;
         }
 
         final FileConfiguration config = YamlConfiguration.loadConfiguration(crate.getFile());
 
         if(!config.contains(args[1])) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownID);
+            Language.send(sender, "crate.unknown_id");
             return true;
         }
         
@@ -52,32 +52,32 @@ public class SetLimitedCommand implements CommandExecutor, TabCompleter {
             config.set(args[2] + ".limited", null);
             try {
                 config.save(crate.getFile());
-                sender.sendMessage(RudiCrates.getPlugin().getLanguage().setLimitedRemoved.replace("%id%", args[1]).replace("%crate%", crate.getName()));
-            } catch (IOException e) {
-                e.printStackTrace();
+                Language.send(sender, "commands.setlimited.removed", new String[] { "%id%", "%crate%" }, new String[] { args[1], crate.getName() });
+            } catch (final IOException exception) {
+                exception.printStackTrace();
             }
             return true;
         }
         
         try {
             amount = Integer.parseInt(args[2]);
-        } catch (NumberFormatException e) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().noNumber);
+        } catch (final NumberFormatException exception) {
+            Language.send(sender, "numbers.invalid");
             return true;
         }
         
         if(amount < 0) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().notUnderZero);
+            Language.send(sender, "numbers.at_least_0");
             return true;
         }
 
         config.set(args[1] + ".limited", amount);
-        sender.sendMessage(RudiCrates.getPlugin().getLanguage().setLimitedDone.replace("%id%", args[1]).replace("%crate%", crate.getName()).replace("%amount%", String.valueOf(amount)));
+        Language.send(sender, "commands.setlimited.done", new String[] { "%id%", "%crate%", "%amount%" }, new String[] { args[1], crate.getName(), String.valueOf(amount) });
 
         try {
             config.save(crate.getFile());
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (final IOException exception) {
+            exception.printStackTrace();
         }
 
         return true;
@@ -85,18 +85,16 @@ public class SetLimitedCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if(!sender.hasPermission("rudicrates.setlimited")) return Collections.emptyList();
+        if (!sender.hasPermission("rudicrates.setlimited")) return Collections.emptyList();
         final List<String> complete = new ArrayList<>();
-        final List<String> crateArgs = new ArrayList<>();
-        Arrays.stream(RudiCrates.getPlugin().getCrateUtils().getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
 
-        if(args.length == 1) {
-            StringUtil.copyPartialMatches(args[0], crateArgs, complete);
+        if (args.length == 1) {
+            StringUtil.copyPartialMatches(args[0], CrateUtils.getCrateNames(), complete);
             return complete;
-        }
-
-        if(args.length == 2) {
-            final FileConfiguration config = YamlConfiguration.loadConfiguration(Crate.getByName(args[0]).getFile());
+        
+        } else if (args.length == 2) {
+            final FileConfiguration config = Crate.getCrateConfigMap().get(args[0]);
+            if (config == null) return Collections.emptyList();
             StringUtil.copyPartialMatches(args[1], config.getKeys(false), complete);
             return complete;
         }

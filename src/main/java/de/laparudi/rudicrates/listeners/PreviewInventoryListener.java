@@ -2,6 +2,8 @@ package de.laparudi.rudicrates.listeners;
 
 import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.Crate;
+import de.laparudi.rudicrates.crate.CrateUtils;
+import de.laparudi.rudicrates.language.Language;
 import de.laparudi.rudicrates.utils.PreviewInventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,14 +19,14 @@ public class PreviewInventoryListener implements Listener {
     public void onWinPageChange(final InventoryClickEvent event) {
         final Inventory inventory = event.getClickedInventory();
         if (inventory == null) return;
-        if (!event.getView().getTitle().contains(RudiCrates.getPlugin().getLanguage().preview)) return;
+        if (!event.getView().getTitle().contains(Language.withoutPrefix("inventories.preview", "%crate%", ""))) return;
 
         final Player player = (Player) event.getWhoClicked();
         final ItemStack item = event.getCurrentItem();
         final ItemStack page = event.getClickedInventory().getItem(49);
         
-        if(page == null || page.getItemMeta() == null || !page.getItemMeta().hasItemFlag(ItemFlag.HIDE_UNBREAKABLE)) return;
-        final String displayName = page.getItemMeta().getDisplayName().replace(RudiCrates.getPlugin().getLanguage().currentPageItemName + " ", "");
+        if (page == null || page.getItemMeta() == null || !page.getItemMeta().hasItemFlag(ItemFlag.HIDE_UNBREAKABLE)) return;
+        final String displayName = page.getItemMeta().getDisplayName().replace(Language.withoutPrefix("items.current_page") + " ", "");
         final int currentPage = Integer.parseInt(displayName) -1;
         
         event.setCancelled(true);
@@ -36,13 +38,13 @@ public class PreviewInventoryListener implements Listener {
             return;
         }
 
-        for (Crate crate : RudiCrates.getPlugin().getCrateUtils().getCrates()) {
+        for (final Crate crate : CrateUtils.getCrates()) {
             if (!event.getView().getTitle().startsWith(crate.getDisplayname())) continue;
             
-            if(item.isSimilar(RudiCrates.getPlugin().getItemManager().previousPage) && currentPage > 0) {
+            if (item.isSimilar(RudiCrates.getPlugin().getItemManager().previousPage) && currentPage > 0) {
                 player.openInventory(PreviewInventoryUtils.cratePreviewInventoriesMap.get(crate.getName()).get(currentPage -1));
                 
-            } else if(item.isSimilar(RudiCrates.getPlugin().getItemManager().nextPage) && currentPage < PreviewInventoryUtils.cratePreviewInventoriesMap.get(crate.getName()).size() -1) {
+            } else if (item.isSimilar(RudiCrates.getPlugin().getItemManager().nextPage) && currentPage < PreviewInventoryUtils.cratePreviewInventoriesMap.get(crate.getName()).size() -1) {
                 player.openInventory(PreviewInventoryUtils.cratePreviewInventoriesMap.get(crate.getName()).get(currentPage +1));
             }
         }

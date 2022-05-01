@@ -1,7 +1,8 @@
 package de.laparudi.rudicrates.commands;
 
-import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.Crate;
+import de.laparudi.rudicrates.crate.CrateUtils;
+import de.laparudi.rudicrates.language.Language;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -23,13 +24,13 @@ public class BindCommandCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
         if (!sender.hasPermission("rudicrates.bindcommand")) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().noPermission);
+            Language.send(sender, "player.no_permission");
             return true;
         }
 
         if (args.length < 3) {
-            RudiCrates.getPlugin().getLanguage().bindCommandHelp.forEach(sender::sendMessage);
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().bindCommandSyntax);
+            Language.getList("commands.bindcommand.help").forEach(sender::sendMessage);
+            Language.send(sender, "commands.bindcommand.syntax");
             return true;
         }
 
@@ -37,8 +38,8 @@ public class BindCommandCommand implements CommandExecutor, TabCompleter {
 
         try {
             crate = Crate.getByName(args[0]);
-        } catch (NullPointerException e) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownCrate);
+        } catch (final NullPointerException exception) {
+            Language.send(sender, "crate.unknown");
             return true;
         }
 
@@ -47,14 +48,14 @@ public class BindCommandCommand implements CommandExecutor, TabCompleter {
         final StringBuilder builder = new StringBuilder();
 
         if (!config.contains(args[1])) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().unknownID);
+            Language.send(sender, "crate.unknown_id");
             return true;
         }
 
         switch (args[2].toLowerCase()) {
             case "add":
                 if (args.length < 4) {
-                    sender.sendMessage(RudiCrates.getPlugin().getLanguage().bindCommandSyntax);
+                    Language.send(sender, "commands.bindcommand.syntax");
                     return true;
                 }
 
@@ -64,22 +65,21 @@ public class BindCommandCommand implements CommandExecutor, TabCompleter {
 
                 final String add = builder.toString().trim();
                 final String addCommand = add.startsWith("/") ? add.replaceFirst("/", "") : add;
-                
-                if(commands.contains(addCommand)) {
-                    sender.sendMessage(RudiCrates.getPlugin().getLanguage().bindCommandAlreadyAdded);
+
+                if (commands.contains(addCommand)) {
+                    Language.send(sender, "commands.bindcommand.already_added");
                     return true;
                 }
-                
+
                 commands.add(addCommand);
                 config.set(args[1] + ".commands", commands);
                 this.save(crate.getFile(), config);
-                sender.sendMessage(RudiCrates.getPlugin().getLanguage().bindCommandAdd
-                        .replace("%command%", "/" + addCommand).replace("%id%", args[1]).replace("%crate%", crate.getName()));
+                Language.send(sender, "commands.bindcommand.add", new String[]{"%command%", "%id%", "%crate%"}, new String[]{"/" + addCommand, args[1], crate.getName()});
                 break;
 
             case "remove":
                 if (args.length < 4) {
-                    sender.sendMessage(RudiCrates.getPlugin().getLanguage().bindCommandSyntax);
+                    Language.send(sender, "commands.bindcommand.syntax");
                     return true;
                 }
 
@@ -91,74 +91,73 @@ public class BindCommandCommand implements CommandExecutor, TabCompleter {
                 final String removeCommand = remove.startsWith("/") ? remove.replaceFirst("/", "") : remove;
 
                 if (!commands.contains(removeCommand)) {
-                    sender.sendMessage(RudiCrates.getPlugin().getLanguage().bindCommandCannotRemove);
+                    Language.send(sender, "commands.bindcommand.cannot_remove");
                     return true;
                 }
 
                 commands.remove(removeCommand);
                 config.set(args[1] + ".commands", commands);
                 this.save(crate.getFile(), config);
-                sender.sendMessage(RudiCrates.getPlugin().getLanguage().bindCommandRemoved
-                        .replace("%command%", "/" + removeCommand).replace("%id%", args[1]).replace("%crate%", crate.getName()));
+                Language.send(sender, "commands.bindcommand.removed", new String[]{"%command%", "%id%", "%crate%"}, new String[]{"/" + removeCommand, args[1], crate.getName()});
                 break;
 
             case "info":
                 if (args.length != 3) {
-                    sender.sendMessage(RudiCrates.getPlugin().getLanguage().bindCommandSyntax);
+                    Language.send(sender, "commands.bindcommand.syntax");
                     return true;
                 }
 
                 if (commands.isEmpty()) {
-                    sender.sendMessage(RudiCrates.getPlugin().getLanguage().bindCommandEmpty);
+                    Language.send(sender, "commands.bindcommand.empty");
                     return true;
                 }
 
-                sender.sendMessage(RudiCrates.getPlugin().getLanguage().bindCommandInfo.replace("%id%", args[1]).replace("%crate%", crate.getName()));
-                commands.forEach(infoCommand -> sender.sendMessage(RudiCrates.getPlugin().getLanguage().prefix + "§8» §6/" + infoCommand));
+                Language.send(sender, "commands.bindcommand.info", new String[]{"%id%", "%crate%"}, new String[]{args[1], crate.getName()});
+                commands.forEach(infoCommand -> sender.sendMessage(Language.getPrefix() + "§8» §6/" + infoCommand));
                 break;
         }
 
         return true;
     }
 
-    private void save(File file, FileConfiguration config) {
+    private void save(final File file, final FileConfiguration config) {
         try {
             config.save(file);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (final IOException exception) {
+            exception.printStackTrace();
         }
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
         if (!sender.hasPermission("rudicrates.bindcommand")) return Collections.emptyList();
-        final List<String> completions = new ArrayList<>();
-        final List<String> crateArgs = new ArrayList<>();
+        final List<String> complete = new ArrayList<>();
         final List<String> bindArgs = Arrays.asList("add", "remove", "info");
-        Arrays.stream(RudiCrates.getPlugin().getCrateUtils().getCrates()).forEach(crate -> crateArgs.add(crate.getName()));
+        final FileConfiguration config = Crate.getCrateConfigMap().get(args[0]);
 
-        if (args.length == 1) {
-            StringUtil.copyPartialMatches(args[0], crateArgs, completions);
-            return completions;
+        switch (args.length) {
+            case 1:
+                StringUtil.copyPartialMatches(args[0], CrateUtils.getCrateNames(), complete);
+                return complete;
 
-        } else if (args.length == 2) {
-            final FileConfiguration config = YamlConfiguration.loadConfiguration(Crate.getByName(args[0]).getFile());
-            StringUtil.copyPartialMatches(args[1], config.getKeys(false), completions);
-            return completions;
+            case 2:
+                if (config == null) return Collections.emptyList();
+                StringUtil.copyPartialMatches(args[1], config.getKeys(false), complete);
+                return complete;
+                
+            case 3:
+                StringUtil.copyPartialMatches(args[2], bindArgs, complete);
+                return complete;
 
-        } else if (args.length == 3) {
-            StringUtil.copyPartialMatches(args[2], bindArgs, completions);
-            return completions;
-
-        } else if (args.length == 4) {
-            final FileConfiguration config = YamlConfiguration.loadConfiguration(Crate.getByName(args[0]).getFile());
-            
-            if (args[2].equalsIgnoreCase("remove")) {
-                StringUtil.copyPartialMatches(args[3], config.getStringList(args[1] + ".commands"), completions);
-                return completions;
-            }
+            case 4:
+                if (!args[2].equalsIgnoreCase("remove")) return Collections.emptyList();
+                if (config == null) return Collections.emptyList();
+                
+                StringUtil.copyPartialMatches(args[3], config.getStringList(args[1] + ".commands"), complete);
+                return complete;
+                
+            default:
+                return Collections.emptyList();
         }
-        
-        return Collections.emptyList();
     }
 }

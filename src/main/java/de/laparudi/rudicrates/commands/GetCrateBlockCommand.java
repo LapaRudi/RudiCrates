@@ -1,6 +1,7 @@
 package de.laparudi.rudicrates.commands;
 
 import de.laparudi.rudicrates.RudiCrates;
+import de.laparudi.rudicrates.language.Language;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -13,13 +14,12 @@ public class GetCrateBlockCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
         if(!(sender.hasPermission("rudicrates.getcrateblock")) || !(sender instanceof Player)) {
-            sender.sendMessage(RudiCrates.getPlugin().getLanguage().noPermission);
+            Language.send(sender, "player.no_permission");
             return true;
         }
-        
-        final Player player = (Player) sender;
-        player.getInventory().addItem(RudiCrates.getPlugin().getItemManager().crateBlock);
-        player.sendMessage(RudiCrates.getPlugin().getLanguage().crateOpeningReceived);
+
+        ((Player) sender).getInventory().addItem(RudiCrates.getPlugin().getItemManager().crateBlock);
+        Language.send(sender, "commands.getcrateblock.done");
         return true;
     }
 }

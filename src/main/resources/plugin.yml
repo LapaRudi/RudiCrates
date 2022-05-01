@@ -1,57 +1,60 @@
 name: RudiCrates
 version: '${project.version}'
 main: de.laparudi.rudicrates.RudiCrates
-api-version: 1.16
+api-version: 1.13
 author: LapaRudi
-description: Case Opening
+description: RudiCrates Crate-Opening
 softdepend:
   - PlugMan
 
 commands:
   rudicrates:
-    description: Hilfe und Reload-Befehl
+    description: Help and reload command
     aliases: [rc, rcrates]
-  getcaseblock:
-    description: Gebe dir ein Case-Opening Block
-    aliases: getcrateblock
+  getcrateblock:
+    description: Give you a crate opening block
   key:
-    description: Gebe/Nehme Crates von Spielern
-    aliases: cratekey
+    description: Add or remove crates from players
+    aliases: [cratekey, keys]
   addtocrate:
-    description: Füge das Item in deiner Hand einer Crate hinzu
-    aliases: [addcrateitem, atc]
+    description: Add the item in your hand to a crate
+    aliases: addcrateitem
   removefromcrate:
-    description: Entferne ein Item aus einer Crate
-    aliases: [removecrateitem, rfc]
+    description: Remove an item from a crate
+    aliases: removecrateitem
   editchance:
-    description: Ändere die Gewinnchance eines Items
-    aliases: chance
+    description: Change the win chance of an item
+    aliases: setchance
   bindcommand:
-    description: Füge einen Befehl zu einem Crate-Item hinzu der ausgeführt wird wenn das Item gewonnen wird
-    aliases: bindcmd
+    description: Add a command to a crate-item that will be executed when the item gets pulled
+    aliases: addcommand
   setvirtual:
-    description: Mache ein Crate-Item virtuell
-    aliases: [setv, virtual]
+    description: Set a crate-item virtual
+    aliases: virtual
   setlimited:
-    description: Limitiere ein Item auf eine bestimmte Stückzahl
+    description: Limit a crate-item to a specific amount
     aliases: limited
 
 permissions: 
-  rudicrates.admin:
-    description: Zugriff auf /rc reload und /rc toggle
-  rudicrates.getcaseblock:
-    description: Zugriff auf den /getcaseblock Befehl
+  rudicrates.*:
+    description: Access to all RudiCrates features
+  rudicrates.reload:
+    description: Access to /rudicrates reload
+  rudicrates.toggle:
+    description: Access to /rudicrates toggle
+  rudicrates.getcrateblock:
+    description: Access to /getcrateblock
   rudicrates.key:
-    description: Zugriff auf den /key Befehl
+    description: Access to /key
   rudicrates.addtocrate:
-    description: Zugriff auf den /addtocrate Befehl
+    description: Access to /addtocrate
   rudicrates.removefromcrate:
-    description: Zugriff auf den /removefromcrate Befehl
+    description: Access to /removefromcrate
   rudicrates.editchance:
-    description: Zugriff auf den /editchance Befehl
+    description: Access to /editchance
   rudicrates.bindcommand:
-    description: Zugriff auf den /bindcommand Befehl
+    description: Access to /bindcommand
   rudicrates.setvirtual:
-    description: Zugriff auf den /setvirtual Befehl
+    description: Access to /setvirtual
   rudicrates.setlimited:
-    description: Zugriff auf den /setlimited Befehl
+    description: Access to /setlimited
