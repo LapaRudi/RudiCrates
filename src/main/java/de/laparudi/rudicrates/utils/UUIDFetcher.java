@@ -45,6 +45,7 @@ public class UUIDFetcher {
         
         try {
             return getAsyncUUID(username).get(5000, TimeUnit.MILLISECONDS);
+            
         } catch (final ExecutionException | InterruptedException | TimeoutException exception) {
             Language.send(Bukkit.getConsoleSender(), "uuidfetcher.exception_uuid", "%player%", username);
             return null;
@@ -72,9 +73,22 @@ public class UUIDFetcher {
     }
     
     public static String getName(final UUID uuid) {
-        if (nameCache.containsKey(uuid)) return nameCache.get(uuid);
+        if (nameCache.containsKey(uuid)) {
+            return nameCache.get(uuid);
+        }
+        
+        try {
+            return getAsyncName(uuid).get(5000, TimeUnit.MILLISECONDS);
+            
+        } catch (final InterruptedException | TimeoutException | ExecutionException exception) {
+            Language.send(Bukkit.getConsoleSender(), "uuidfetcher.exception_name", "%player%", uuid.toString());
+            return null;
+        }
+    }
+    
+    public static CompletableFuture<String> getAsyncName(final UUID uuid) {
 
-        CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync(() -> {
             try {
                 final HttpURLConnection connection = (HttpURLConnection) new URL(String.format(NAME_URL, UUIDTypeAdapter.fromUUID(uuid))).openConnection();
                 connection.setReadTimeout(2000);
@@ -87,9 +101,8 @@ public class UUIDFetcher {
 
             } catch (final Exception exception) {
                 Language.send(Bukkit.getConsoleSender(), "uuidfetcher.exception_name", "%player%", uuid.toString());
-            }
-            return null;
+                return null;
+            }   
         });
-        return null;
     }
 }
