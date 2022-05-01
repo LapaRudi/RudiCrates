@@ -110,10 +110,10 @@ public class PreviewInventoryUtils {
         final boolean useCloseItem = config.getBoolean("items.use_close");
         final boolean useFillItem = config.getBoolean("items.use_fill");
         
-        if(inventoryTitle == null) inventoryTitle = "RudiCrates";
+        if (inventoryTitle == null) inventoryTitle = "RudiCrates";
         menuInventory = Bukkit.createInventory(null, inventorySize, ChatColor.translateAlternateColorCodes('&', inventoryTitle));
 
-        if(useFillItem) {
+        if (useFillItem) {
             for (int i = 0; i < menuInventory.getSize(); i++) {
                 if (menuInventory.getItem(i) == null) {
                     menuInventory.setItem(i, RudiCrates.getPlugin().getItemManager().fill);

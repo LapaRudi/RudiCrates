@@ -16,7 +16,7 @@ public class PlayerInventoryCloseListener implements Listener {
         final Player player = (Player) event.getPlayer();
         final Inventory inventory = player.getOpenInventory().getTopInventory();
         
-        if(CrateUtils.currentlyOpening.contains(player.getUniqueId())) {
+        if (CrateUtils.currentlyOpening.contains(player.getUniqueId())) {
             Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> player.openInventory(inventory), 1);
         }
     }

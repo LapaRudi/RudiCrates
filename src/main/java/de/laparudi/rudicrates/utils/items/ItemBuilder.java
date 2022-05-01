@@ -70,7 +70,7 @@ public class ItemBuilder {
     }
 
     public ItemBuilder invisibleEnchant(final boolean configValue) {
-        if(!configValue || meta == null) return this;
+        if (!configValue || meta == null) return this;
         meta.addEnchant(Enchantment.LURE, 1, false);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         return this;

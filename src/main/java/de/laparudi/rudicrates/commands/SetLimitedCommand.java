@@ -21,12 +21,12 @@ public class SetLimitedCommand implements CommandExecutor, TabCompleter {
     
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if(!sender.hasPermission("rudicrates.setlimited")) {
+        if (!sender.hasPermission("rudicrates.setlimited")) {
             Language.send(sender, "player.no_permission");
             return true;
         }
 
-        if(args.length != 3) {
+        if (args.length != 3) {
             Language.send(sender, "commands.setlimited.syntax");
             return true;
         }
@@ -43,12 +43,12 @@ public class SetLimitedCommand implements CommandExecutor, TabCompleter {
 
         final FileConfiguration config = YamlConfiguration.loadConfiguration(crate.getFile());
 
-        if(!config.contains(args[1])) {
+        if (!config.contains(args[1])) {
             Language.send(sender, "crate.unknown_id");
             return true;
         }
         
-        if(args[2].equalsIgnoreCase("#remove")) {
+        if (args[2].equalsIgnoreCase("#remove")) {
             config.set(args[2] + ".limited", null);
             try {
                 config.save(crate.getFile());
@@ -66,7 +66,7 @@ public class SetLimitedCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         
-        if(amount < 0) {
+        if (amount < 0) {
             Language.send(sender, "numbers.at_least_0");
             return true;
         }

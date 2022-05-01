@@ -22,7 +22,7 @@ public class SetVirtualCommand implements CommandExecutor, TabCompleter {
     
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if(!sender.hasPermission("rudicrates.setvirtual")) {
+        if (!sender.hasPermission("rudicrates.setvirtual")) {
             Language.send(sender, "player.no_permission");
             return true;
         }
@@ -43,7 +43,7 @@ public class SetVirtualCommand implements CommandExecutor, TabCompleter {
         
         final FileConfiguration config = YamlConfiguration.loadConfiguration(crate.getFile());
         
-        if(!config.contains(args[1])) {
+        if (!config.contains(args[1])) {
             Language.send(sender, "crate.unknown_id");
             return true;
         }
@@ -51,7 +51,7 @@ public class SetVirtualCommand implements CommandExecutor, TabCompleter {
         config.set(args[1] + ".virtual", Boolean.valueOf(args[2]));
         Language.send(sender, "commands.setvirtual.done", new String[] { "%id%", "%crate%", "%value%" }, new String[] { args[1], crate.getName(), args[2].toLowerCase()});
         
-        if(Boolean.parseBoolean(args[2]) && config.getStringList(args[1] + ".commands").isEmpty()) {
+        if (Boolean.parseBoolean(args[2]) && config.getStringList(args[1] + ".commands").isEmpty()) {
             Language.send(sender, "commands.setvirtual.warning");
         }
         

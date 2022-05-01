@@ -24,12 +24,12 @@ public class CratePlaceListener implements Listener {
     public void onCratePlace(final BlockPlaceEvent event) {
         final ItemStack item = new ItemBuilder(event.getItemInHand().clone()).setAmount(1).toItem();
         
-        if(CrateUtils.keyItems.contains(item)) {
+        if (CrateUtils.keyItems.contains(item)) {
             event.setCancelled(true);
             return;
         }
         
-        if(!item.isSimilar(RudiCrates.getPlugin().getItemManager().crateBlock)) return;
+        if (!item.isSimilar(RudiCrates.getPlugin().getItemManager().crateBlock)) return;
         final Block block = event.getBlockPlaced();
         
         Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> {

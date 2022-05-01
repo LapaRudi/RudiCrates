@@ -65,7 +65,7 @@ public class DataUtils {
         if (!this.playerExists(uuid)) this.createPlayer(uuid);
         int oldAmount;
         
-        if(RudiCrates.getPlugin().getConfig().getBoolean("usemysql")) {
+        if (RudiCrates.getPlugin().getConfig().getBoolean("usemysql")) {
             oldAmount = RudiCrates.getPlugin().getMySQL().getValue(uuid, crate);
             RudiCrates.getPlugin().getMySQL().setValue(uuid, crate, oldAmount + amount);
         
@@ -116,7 +116,7 @@ public class DataUtils {
     public void setCrateAmount(final UUID uuid, final Crate crate, final int amount) {
         if (!this.playerExists(uuid)) this.createPlayer(uuid);
         
-        if(RudiCrates.getPlugin().getConfig().getBoolean("usemysql")) {
+        if (RudiCrates.getPlugin().getConfig().getBoolean("usemysql")) {
             RudiCrates.getPlugin().getMySQL().setValue(uuid, crate, amount);
         
         } else {
@@ -128,7 +128,7 @@ public class DataUtils {
     public void resetPlayer(final UUID uuid) {
         if (!this.playerExists(uuid)) return;
         
-        if(RudiCrates.getPlugin().getConfig().getBoolean("usemysql")) {
+        if (RudiCrates.getPlugin().getConfig().getBoolean("usemysql")) {
             RudiCrates.getPlugin().getMySQL().resetPlayer(uuid);
         
         } else {

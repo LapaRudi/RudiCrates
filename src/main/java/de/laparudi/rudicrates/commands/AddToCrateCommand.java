@@ -23,12 +23,12 @@ public class AddToCrateCommand implements CommandExecutor, TabCompleter {
     
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if(!(sender.hasPermission("rudicrates.addtocrate")) || !(sender instanceof Player)) {
+        if (!(sender.hasPermission("rudicrates.addtocrate")) || !(sender instanceof Player)) {
             Language.send(sender, "player.no_permission");
             return true;
         }
         
-        if(args.length != 2) {
+        if (args.length != 2) {
             Language.send(sender, "commands.addtocrate.syntax");
             return true;
         }
@@ -45,7 +45,7 @@ public class AddToCrateCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         
-        if(itemInHand.getType() == Material.AIR) {
+        if (itemInHand.getType() == Material.AIR) {
             Language.send(player, "player.empty_hand");
             return true;
         }

@@ -13,7 +13,7 @@ public class GetCrateBlockCommand implements CommandExecutor {
     
     @Override
     public boolean onCommand(CommandSender sender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] args) {
-        if(!(sender.hasPermission("rudicrates.getcrateblock")) || !(sender instanceof Player)) {
+        if (!(sender.hasPermission("rudicrates.getcrateblock")) || !(sender instanceof Player)) {
             Language.send(sender, "player.no_permission");
             return true;
         }

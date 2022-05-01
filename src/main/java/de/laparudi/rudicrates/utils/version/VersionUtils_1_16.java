@@ -56,7 +56,7 @@ public class VersionUtils_1_16 implements VersionUtils {
 
     @Override
     public void openAnimation(final Player player, final Location location) {
-        if(location == null) return;
+        if (location == null) return;
         final BlockPosition position = new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ());
         final PacketPlayOutBlockAction packet = new PacketPlayOutBlockAction(position, Blocks.CHEST, 1, 3);
         ((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
@@ -65,7 +65,7 @@ public class VersionUtils_1_16 implements VersionUtils {
 
     @Override
     public void closeAnimation(final Player player, final Location location) {
-        if(location == null) return;
+        if (location == null) return;
         final BlockPosition position = new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ());
         final PacketPlayOutBlockAction packet = new PacketPlayOutBlockAction(position, Blocks.CHEST, 1, 0);
         ((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
