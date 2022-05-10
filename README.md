@@ -11,15 +11,17 @@ RudiCrates Crate-Opening
 - Item names in the win message are translated into client language
 - Keys are stored in a MySQL database or .yml files
 - All messages customizable
-- Support for 1.8.8, 1.12.2⁽³⁾, 1.14.4⁽³⁾, and 1.16.5 (Recommended: 1.16.5)
+- Support for 1.8.8 - 1.18.2 (except 1.12.x and 1.14.x)
 
 Soon:
 - More crate animations
+- Particles
 - Possibility to change the slots of preview items
+- Possibility to change the preview of a specific item
 
 ⁽¹⁾ More than 1000 items per crate are not recommended
 
 ⁽²⁾ Virtual items are not given to the player, only the added command is executed.
  (e.g. useful for money or crates).
 
-⁽³⁾ Currently not working, idk why
+⁽³⁾ /
