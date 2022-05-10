@@ -60,9 +60,9 @@ public class AddToCrateCommand implements CommandExecutor, TabCompleter {
         final FileConfiguration config = YamlConfiguration.loadConfiguration(crate.getFile());
         for (final String key : config.getKeys(false)) {
             final ItemStack item = config.getItemStack(key + ".item");
-            if (item == null) continue;
+            if (item == null || item.getAmount() != itemInHand.getAmount()) continue;
             
-            if (item == itemInHand) {
+            if (item.isSimilar(itemInHand)) {
                 Language.send(player, "commands.addtocrate.already_in");
                 return true;
             }

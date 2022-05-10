@@ -1,7 +1,6 @@
 package de.laparudi.rudicrates;
 
 import com.rylinaux.plugman.util.PluginUtil;
-import com.tchristofferson.configupdater.ConfigUpdater;
 import de.laparudi.rudicrates.commands.*;
 import de.laparudi.rudicrates.crate.CrateUtils;
 import de.laparudi.rudicrates.data.DataUtils;
@@ -10,6 +9,8 @@ import de.laparudi.rudicrates.data.MySQL;
 import de.laparudi.rudicrates.language.Language;
 import de.laparudi.rudicrates.language.TranslationUtils;
 import de.laparudi.rudicrates.listeners.*;
+import de.laparudi.rudicrates.listeners.inventory.*;
+import com.tchristofferson.configupdater.ConfigUpdater;
 import de.laparudi.rudicrates.utils.PreviewInventoryUtils;
 import de.laparudi.rudicrates.utils.items.ItemManager;
 import de.laparudi.rudicrates.utils.version.*;
@@ -27,8 +28,11 @@ import java.util.Objects;
 
 @Getter
 public class RudiCrates extends JavaPlugin {
+
+    // TODO /setpreview <crate> <id> change the preview to the current in hand
     
     private MySQL mySQL;
+    private Reflection reflection;
     private VersionUtils versionUtils;
     private static @Getter RudiCrates plugin;
 
@@ -46,6 +50,7 @@ public class RudiCrates extends JavaPlugin {
     private final File playerData = new File(this.getDataFolder(), "playerdata");
     private final File crateFolder = new File(this.getDataFolder(), "crates");
     private FileConfiguration messagesConfig;
+    private FileConfiguration locationsConfig;
 
     private final String version = this.getDescription().getVersion();
     private final String serverVersion = Bukkit.getBukkitVersion();
@@ -62,7 +67,7 @@ public class RudiCrates extends JavaPlugin {
         this.connectMySQL();
         this.loadListeners();
         this.loadCommands();
-
+        
         Bukkit.getConsoleSender().sendMessage(Language.getPrefix() + "§2RudiCrates-" + version + " enabled in " + (System.currentTimeMillis() - timestamp) + "ms.");
     }
 
@@ -74,25 +79,36 @@ public class RudiCrates extends JavaPlugin {
     }
 
     private void initialize() {
+        this.reflection = new Reflection();
         this.translationUtils = new TranslationUtils();
         this.language = new Language();
         language.loadMessages();
-        this.crateUtils = new CrateUtils();
-        CrateUtils.loadCrates();
+        
         this.fileUtils = new FileUtils();
         this.setupVersionUtils();
         this.itemManager = new ItemManager();
+        this.crateUtils = new CrateUtils();
+        CrateUtils.loadCrates();
+        
         this.dataUtils = new DataUtils();
         this.inventoryUtils = new PreviewInventoryUtils();
     }
 
     public void setup() {
         this.reloadMessagesConfig();
+        
+        if (reflection.getVersionInt() >= 17) {
+            reflection.loadCache();
+        } else {
+            reflection.loadCacheLegacy();
+        }
+        
         inventoryUtils.setupCrateMenu();
         inventoryUtils.loadPreviewInventories();
         translationUtils.setupTranslations();
         dataUtils.reloadCache();
         crateUtils.loadChancesResult();
+        crateUtils.loadCrateBlockTypes();
         fileUtils.deleteUnusedCrateFiles();
     }
 
@@ -109,10 +125,11 @@ public class RudiCrates extends JavaPlugin {
     }
 
     private void loadListeners() {
-        final Listener[] listeners = new Listener[] { new CrateBreakListener(), new CrateClickListener(),
-                new CratePlaceListener(), new CrateInventoryListener(), new PlayerQuitListener(), new PreviewInventoryListener(),
-                new PlayerInventoryCloseListener(), new CrateInventoryCloseListener(), new InteractWithKeyListener() };
-
+        final Listener[] listeners = new Listener[] {
+                new CrateBreakListener(), new CrateClickListener(), new CratePlaceListener(), new CrateInventoryListener(),
+                new PlayerQuitListener(), new PreviewInventoryListener(), new PlayerInventoryCloseListener(),
+                new CrateInventoryCloseListener(), new InteractWithKeyListener(), new SelectCrateBlockListener()
+        };
         Arrays.stream(listeners).forEach(listener -> Bukkit.getPluginManager().registerEvents(listener, this));
     }
 
@@ -142,6 +159,7 @@ public class RudiCrates extends JavaPlugin {
         }
 
         this.messagesConfig = YamlConfiguration.loadConfiguration(messagesFile);
+        this.locationsConfig = YamlConfiguration.loadConfiguration(locationsFile);
 
         Bukkit.getScheduler().runTaskLater(this, () -> {
             Arrays.stream(CrateUtils.getCrates()).forEach(crate -> {
@@ -170,25 +188,21 @@ public class RudiCrates extends JavaPlugin {
     }
 
     private void setupVersionUtils() {
-        if (serverVersion.contains("1.8")) {
-            versionUtils = new VersionUtils_1_8();
-            isLegacy = true;
-
-        } else if (serverVersion.contains("1.12")) {
-            versionUtils = new VersionUtils_1_12();
-            isLegacy = true;
-
-        } else if (serverVersion.contains("1.14")) {
-            versionUtils = new VersionUtils_1_14();
-
-        } else if (serverVersion.contains("1.16")) {
+        final int version = reflection.getVersionInt();
+        
+        if (version >= 16) {
             versionUtils = new VersionUtils_1_16();
 
+        } else if (version >= 13) {
+            versionUtils = new VersionUtils_1_13();
+
+        } else if (version >= 9) {
+            versionUtils = new VersionUtils_1_9();
+            isLegacy = true;
+
         } else {
-            Bukkit.getConsoleSender().sendMessage(Language.getPrefix() + "§cYour version (" + serverVersion + ") is not supported by RudiCrates.");
-            Bukkit.getConsoleSender().sendMessage(Language.getPrefix() + "§eThe following versions are currently supported: §21.8.8, 1.12.2, 1.14.4, 1.16.5");
-            this.unloadPlugin();
-            return;
+            versionUtils = new VersionUtils_1_8();
+            isLegacy = true;
         }
 
         versionUtils.formatConfig();
@@ -209,6 +223,10 @@ public class RudiCrates extends JavaPlugin {
         } catch (final IOException exception) {
             exception.printStackTrace();
         }
+    }
+    
+    public void reloadLocationsConfig() {
+        this.locationsConfig = YamlConfiguration.loadConfiguration(locationsFile);
     }
 
     public void unloadPlugin() {

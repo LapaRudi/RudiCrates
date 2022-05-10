@@ -23,8 +23,9 @@ public class Crate {
     private final @Getter String name, displayname;
     private final @Getter Material material;
     private final @Getter File file;
-    private static final @Getter Map<String, Map<ItemStack, Double[]>> map = new HashMap<>();
-    private static final @Getter Map<String, FileConfiguration> crateConfigMap = new HashMap<>();
+    
+    private static final @Getter Map<String, Map<ItemStack, Double[]>> crateItemCache   = new HashMap<>();
+    private static final @Getter Map<String, FileConfiguration> crateConfigCache = new HashMap<>();
     private final @Getter Map<ItemStack, Double[]> crateMap;
     
     private static final String[] crateValues = new String[] { ".displayname", ".slot", ".material" };
@@ -46,8 +47,8 @@ public class Crate {
             }
         }
         
-        if (map.containsKey(name)) return;
-        Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), Crate::reloadCrateMaps, 4);
+        if (crateItemCache.containsKey(name)) return;
+        Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> Crate.reloadCrateMaps(this), 4);
     }
 
     private static boolean everyValueGiven(final String crateName) {
@@ -67,26 +68,32 @@ public class Crate {
         return new Crate(name, ChatColor.translateAlternateColorCodes('&', Objects.requireNonNull(config.getString("crates." + name + ".displayname"))), material);
     }
     
-    public static void reloadCrateMaps() {
-        for (final Crate crate : CrateUtils.getCrates()) {
+    public static void reloadCrateMaps(final Crate... crates) {
+        for (final Crate crate : crates) {
             final FileConfiguration crateConfig = YamlConfiguration.loadConfiguration(crate.getFile());
+            crate.getCrateMap().clear();
             double count;
             double amount = 0;
 
-            for (String key : crateConfig.getKeys(false)) {
+            for (final String key : crateConfig.getKeys(false)) {
                 if (crateConfig.get(key + ".limited") != null && crateConfig.getInt(key + ".limited") < 1) continue;
                 final ItemStack item = crateConfig.getItemStack(key + ".item");
-
-                try {
+                
+                try { // double[] = from, to, item-id
                     count = crateConfig.getDouble(key + ".chance");
+                    if (crate.getCrateMap().containsKey(item)) {
+                        Language.send(Bukkit.getConsoleSender(), "crate.duplicate_found", new String[] { "%crate%", "%id%" }, new String[] { crate.getName(), key });
+                        continue;
+                    }
+                    
                     crate.getCrateMap().put(item, new Double[] { amount, amount + count, Double.parseDouble(key) });
                     amount = amount + count;
 
                 } catch (final NumberFormatException exception) {
-                    Language.send(Bukkit.getConsoleSender(), "crate.incorrect_chance_value", new String[] { "%id%", "%crate%" }, new String[] { key + crate.getName() });
+                    Language.send(Bukkit.getConsoleSender(), "crate.incorrect_chance_value", new String[] { "%id%", "%crate%" }, new String[] { key, crate.getName() });
                 }
             }
-            map.put(crate.getName(), crate.getCrateMap());
+            crateItemCache.put(crate.getName(), crate.getCrateMap());
         }
     }
 }

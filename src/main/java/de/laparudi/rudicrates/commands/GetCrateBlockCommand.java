@@ -18,8 +18,7 @@ public class GetCrateBlockCommand implements CommandExecutor {
             return true;
         }
 
-        ((Player) sender).getInventory().addItem(RudiCrates.getPlugin().getItemManager().crateBlock);
-        Language.send(sender, "commands.getcrateblock.done");
+        RudiCrates.getPlugin().getCrateUtils().openCrateBlocksInventory(((Player) sender));
         return true;
     }
 }

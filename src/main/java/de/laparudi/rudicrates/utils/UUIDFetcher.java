@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class UUIDFetcher {
-    
+
     private static final Gson gson = new GsonBuilder().registerTypeAdapter(UUID.class, new UUIDTypeAdapter()).create();
 
     private static final String UUID_URL = "https://api.mojang.com/users/profiles/minecraft/";
@@ -42,19 +42,19 @@ public class UUIDFetcher {
         if (uuidCache.containsKey(username.toLowerCase())) {
             return uuidCache.get(username.toLowerCase());
         }
-        
+
         try {
             return getAsyncUUID(username).get(5000, TimeUnit.MILLISECONDS);
-            
+
         } catch (final ExecutionException | InterruptedException | TimeoutException exception) {
             Language.send(Bukkit.getConsoleSender(), "uuidfetcher.exception_uuid", "%player%", username);
             return null;
         }
     }
-    
+
     private static CompletableFuture<UUID> getAsyncUUID(final String username) {
         final String name = username.toLowerCase();
-        
+
         return CompletableFuture.supplyAsync(() -> {
             try {
                 final HttpURLConnection connection = (HttpURLConnection) new URL(UUID_URL + name).openConnection();
@@ -71,21 +71,21 @@ public class UUIDFetcher {
             }
         });
     }
-    
+
     public static String getName(final UUID uuid) {
         if (nameCache.containsKey(uuid)) {
             return nameCache.get(uuid);
         }
-        
+
         try {
             return getAsyncName(uuid).get(5000, TimeUnit.MILLISECONDS);
-            
+
         } catch (final InterruptedException | TimeoutException | ExecutionException exception) {
             Language.send(Bukkit.getConsoleSender(), "uuidfetcher.exception_name", "%player%", uuid.toString());
             return null;
         }
     }
-    
+
     public static CompletableFuture<String> getAsyncName(final UUID uuid) {
 
         return CompletableFuture.supplyAsync(() -> {
@@ -102,7 +102,7 @@ public class UUIDFetcher {
             } catch (final Exception exception) {
                 Language.send(Bukkit.getConsoleSender(), "uuidfetcher.exception_name", "%player%", uuid.toString());
                 return null;
-            }   
+            }
         });
     }
 }

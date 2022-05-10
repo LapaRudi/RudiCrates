@@ -4,7 +4,7 @@ import de.laparudi.rudicrates.RudiCrates;
 import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
-import org.bukkit.Bukkit;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -16,7 +16,7 @@ public class Language {
     private static final Map<String, List<String>> listMap = new HashMap<>();
     
     public static void send(final CommandSender sender, final BaseComponent[] components, final String configKey) {
-        if (!messagesMap.containsKey(configKey) || messagesMap.get(configKey).isBlank()) return;
+        if (!messagesMap.containsKey(configKey) || StringUtils.isBlank(messagesMap.get(configKey))) return;
         
         if (!(sender instanceof Player)) {
             final StringBuilder builder = new StringBuilder();
@@ -29,32 +29,32 @@ public class Language {
     }
     
     public static void send(final CommandSender sender, final String configKey) {
-        if (!messagesMap.containsKey(configKey) || messagesMap.get(configKey).isBlank()) return;
+        if (!messagesMap.containsKey(configKey) || StringUtils.isBlank(messagesMap.get(configKey))) return;
         sender.sendMessage(get(configKey));
     }
 
     public static void send(final CommandSender sender, final String configKey, final String placeholder, final String replaceTo) {
-        if (!messagesMap.containsKey(configKey) || messagesMap.get(configKey).isBlank()) return;
+        if (!messagesMap.containsKey(configKey) || StringUtils.isBlank(messagesMap.get(configKey))) return;
         sender.sendMessage(get(configKey, placeholder, replaceTo));
     }
 
     public static void send(final CommandSender sender, final String configKey, final String[] placeholders, final String[] replaceTo) {
-        if (!messagesMap.containsKey(configKey) || messagesMap.get(configKey).isBlank()) return;
+        if (!messagesMap.containsKey(configKey) || StringUtils.isBlank(messagesMap.get(configKey))) return;
         sender.sendMessage(get(configKey, placeholders, replaceTo));
     }
     
     public static String get(final String configKey) {
-        if (!messagesMap.containsKey(configKey) || messagesMap.get(configKey).isBlank()) return "<null>";
+        if (!messagesMap.containsKey(configKey) || StringUtils.isBlank(messagesMap.get(configKey))) return "<null>";
         return prefix + ChatColor.translateAlternateColorCodes('&', messagesMap.get(configKey));
     }
 
     public static String get(final String configKey, final String placeholder, final String replaceTo) {
-        if (!messagesMap.containsKey(configKey) || messagesMap.get(configKey).isBlank()) return "<null>";
+        if (!messagesMap.containsKey(configKey) || StringUtils.isBlank(messagesMap.get(configKey))) return "<null>";
         return replace(messagesMap.get(configKey), placeholder, replaceTo, true);
     }
     
     public static String get(final String configKey, final String[] placeholders, final String[] replaceTo) {
-        if (!messagesMap.containsKey(configKey) || messagesMap.get(configKey).isBlank()) return "<null>";
+        if (!messagesMap.containsKey(configKey) || StringUtils.isBlank(messagesMap.get(configKey))) return "<null>";
         return replace(messagesMap.get(configKey), placeholders, replaceTo, true);
     }
     
@@ -74,17 +74,17 @@ public class Language {
     }
 
     public static String withoutPrefix(final String configKey) {
-        if (!messagesMap.containsKey(configKey) || messagesMap.get(configKey).isBlank()) return "<null>";
+        if (!messagesMap.containsKey(configKey) || StringUtils.isBlank(messagesMap.get(configKey))) return "<null>";
         return ChatColor.translateAlternateColorCodes('&', messagesMap.get(configKey));
     }
 
     public static String withoutPrefix(final String configKey, final String placeholder, final String replaceTo) {
-        if (!messagesMap.containsKey(configKey) || messagesMap.get(configKey).isBlank()) return "<null>";
+        if (!messagesMap.containsKey(configKey) || StringUtils.isBlank(messagesMap.get(configKey))) return "<null>";
         return replace(messagesMap.get(configKey), placeholder, replaceTo, false);
     }
 
     public static String withoutPrefix(final String configKey, final String[] placeholders, final String[] replaceTo) {
-        if (!messagesMap.containsKey(configKey) || messagesMap.get(configKey).isBlank()) return "<null>";
+        if (!messagesMap.containsKey(configKey) || StringUtils.isBlank(messagesMap.get(configKey))) return "<null>";
         return replace(messagesMap.get(configKey), placeholders, replaceTo, false);
     }
 
@@ -179,7 +179,7 @@ public class Language {
         return input;
     }
     
-    private static final @Getter String prefix = Bukkit.getBukkitVersion().contains("1.16") ? RudiCrates.getPlugin().getTranslationUtils().hexColorString(
+    private static final @Getter String prefix = RudiCrates.getPlugin().getReflection().getVersionInt() >= 16 ? RudiCrates.getPlugin().getTranslationUtils().hexColorString(
             new String[] { "#4F4F4F", "#b50456", "#b82c7c", "#b349a1", "#a563c1", "#907bdc", "#7392f0", "#50a6fc", "#24b9ff", "#00caff", "#14daff", "#4F4F4F" },
             new Character[] { '[', 'R', 'u', 'd', 'i', 'C', 'r', 'a', 't', 'e', 's', ']', ' ' }) : "§8[§cRudiCrates§8] §r";
 }

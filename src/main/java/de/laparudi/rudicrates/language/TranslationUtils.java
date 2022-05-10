@@ -17,7 +17,7 @@ public class TranslationUtils {
     private static final Map<Material, TranslatableComponent> translations = new HashMap<>();
 
     public final BaseComponent componentPrefix() {
-        if (RudiCrates.getPlugin().getServerVersion().contains("1.16")) {
+        if (RudiCrates.getPlugin().getReflection().getVersionInt() >= 16) {
             return this.arrayToSingleComponent(new ComponentBuilder("[").color(ChatColor.of("#4F4F4F"))
                     .append("R").color(ChatColor.of("#b50456")).append("u").color(ChatColor.of("#b82c7c")).append("d").color(ChatColor.of("#b349a1"))
                     .append("i").color(ChatColor.of("#a563c1")).append("C").color(ChatColor.of("#907bdc")).append("r").color(ChatColor.of("#7392f0"))
@@ -59,7 +59,7 @@ public class TranslationUtils {
     
     public TranslatableComponent getTranslation(final Material material) {
         if (RudiCrates.getPlugin().isLegacy()) {
-            return new TranslatableComponent(WordUtils.capitalize(material.name().toLowerCase().replace("_", " ")));
+            return new TranslatableComponent(WordUtils.capitalize(material.name().toLowerCase().replace("_", " ")).trim());
         }
         
         return translations.get(material);
@@ -83,7 +83,7 @@ public class TranslationUtils {
             case SELF:
                 component.addExtra(Language.withoutPrefix("crate.win.self", "%amount%", amount));
                 component.addExtra(display);
-                component.addExtra(" " + Language.withoutPrefix("crate.win.chance", "%chance%", String.valueOf(chance)));
+                component.addExtra(Language.withoutPrefix("crate.win.chance", "%chance%", String.valueOf(chance)));
                 return component;
                 
             case BROADCAST:

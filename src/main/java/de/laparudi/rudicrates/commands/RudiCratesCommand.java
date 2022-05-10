@@ -83,13 +83,14 @@ public class RudiCratesCommand implements CommandExecutor, TabCompleter {
                     
                     RudiCrates.getPlugin().reloadMessagesConfig();
                     RudiCrates.getPlugin().reloadConfig();
-                    Crate.reloadCrateMaps();
+                    Crate.reloadCrateMaps(CrateUtils.getCrates());
                     RudiCrates.getPlugin().getLanguage().loadMessages();
                     RudiCrates.getPlugin().getItemManager().reloadItems();
                     RudiCrates.getPlugin().getInventoryUtils().setupCrateMenu();
                     RudiCrates.getPlugin().getInventoryUtils().loadPreviewInventories();
                     CrateUtils.loadCrates();
                     RudiCrates.getPlugin().getCrateUtils().loadChancesResult();
+                    RudiCrates.getPlugin().getCrateUtils().loadCrateBlockTypes();
                     Language.send(sender, "commands.rudicrates.reload_all");
                     return true;
                 }
@@ -124,6 +125,7 @@ public class RudiCratesCommand implements CommandExecutor, TabCompleter {
                         CrateUtils.loadCrates();
                         RudiCrates.getPlugin().getItemManager().reloadItems();
                         RudiCrates.getPlugin().getInventoryUtils().setupCrateMenu();
+                        RudiCrates.getPlugin().getCrateUtils().loadCrateBlockTypes();
                         Language.send(sender, "commands.rudicrates.reload_config");
                         return true;
 
@@ -137,7 +139,7 @@ public class RudiCratesCommand implements CommandExecutor, TabCompleter {
                         RudiCrates.getPlugin().getItemManager().reloadItems();
                         RudiCrates.getPlugin().getInventoryUtils().loadPreviewInventories();
                         RudiCrates.getPlugin().getCrateUtils().loadChancesResult();
-                        Crate.reloadCrateMaps();
+                        Crate.reloadCrateMaps(CrateUtils.getCrates());
                         RudiCrates.getPlugin().getInventoryUtils().setupCrateMenu();
                         CrateUtils.loadCrates();
                         Language.send(sender, "commands.rudicrates.reload_items");
@@ -160,6 +162,7 @@ public class RudiCratesCommand implements CommandExecutor, TabCompleter {
             return complete;
 
         } else if (args.length == 2) {
+            if (!args[0].equalsIgnoreCase("reload")) return Collections.emptyList();
             StringUtil.copyPartialMatches(args[1], Arrays.asList("config", "messages", "items"), complete);
             return complete;
         }

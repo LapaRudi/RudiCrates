@@ -1,5 +1,7 @@
 package de.laparudi.rudicrates.crate;
 
+import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSound;
 import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.data.Bundle;
 import de.laparudi.rudicrates.language.Language;
@@ -7,10 +9,7 @@ import de.laparudi.rudicrates.language.TranslationUtils;
 import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TranslatableComponent;
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -22,7 +21,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -37,6 +35,8 @@ public class CrateUtils {
     
     private static final @Getter List<String> crateNames = new ArrayList<>();
     private static @Getter Crate[] crates;
+
+    private static Inventory crateBlocksInventory;
     
     public static void loadCrates() {
         final List<Crate> list = new ArrayList<>();
@@ -51,18 +51,36 @@ public class CrateUtils {
                 keyItems.add(RudiCrates.getPlugin().getItemManager().getCrateKeyItem(crate, 1));
 
             } catch (final NullPointerException exception) {
-                Language.send(Bukkit.getConsoleSender(), "crates.incomplete", "%crate%", key);
+                Language.send(Bukkit.getConsoleSender(), "crate.incomplete", "%crate%", key);
             }
         });
         
-        crates = list.toArray(Crate[]::new);
+        crates = list.toArray(new Crate[0]);
     }
-
-    @Nonnull
+    
+    public void loadCrateBlockTypes() {
+        final List<String> blockTypesList = RudiCrates.getPlugin().getConfig().getStringList("available_crate_blocks");
+        int slots = (int) Math.ceil(blockTypesList.size() / 9F) *9;
+        if (slots > 54) slots = 54;
+        crateBlocksInventory = Bukkit.createInventory(null, slots, Language.withoutPrefix("inventories.available_crate_blocks"));
+        
+        blockTypesList.forEach(block -> {
+            final Material material = XMaterial.matchXMaterial(block).orElse(XMaterial.CHEST).parseMaterial();
+            if (material == null || crateBlocksInventory.contains(material)) return;
+            crateBlocksInventory.addItem(RudiCrates.getPlugin().getItemManager().getCrateBlock(material));
+        });
+        
+        RudiCrates.getPlugin().getItemManager().fillInventory(crateBlocksInventory);
+    }
+    
+    public void openCrateBlocksInventory(final Player player) {
+        player.openInventory(crateBlocksInventory);
+    }
+    
     private Bundle<ItemStack, Integer> getRandomItem(final Crate crate) {
         final double random = ThreadLocalRandom.current().nextDouble(chancesResult.get(crate.getName()));
 
-        for (final Map.Entry<ItemStack, Double[]> entry : Crate.getMap().get(crate.getName()).entrySet()) {
+        for (final Map.Entry<ItemStack, Double[]> entry : Crate.getCrateItemCache().get(crate.getName()).entrySet()) {
             final Double[] doubles = entry.getValue();
 
             if (doubles[0] <= random && doubles[1] >= random) {
@@ -111,7 +129,7 @@ public class CrateUtils {
                     } else
                         animationInventory.setItem(17, this.getRandomItem(crate).getKey());
 
-                    player.playSound(player.getLocation(), RudiCrates.getPlugin().getVersionUtils().pling(), 1.0F, 0.8F);
+                    XSound.play(player, "BLOCK_NOTE_BLOCK_PLING");
                     count++;
 
                     if (count >= 2) {
@@ -122,7 +140,7 @@ public class CrateUtils {
                             Bukkit.getScheduler().cancelTask(task);
 
                             Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> {
-                                player.playSound(player.getLocation(), RudiCrates.getPlugin().getVersionUtils().winSound(), 1.0F, 0.8F);
+                                XSound.play(player, "BLOCK_NOTE_BLOCK_BELL");
                                 delay = 2;
                                 this.finishAnimation(player, animationInventory);
                             }, 15);
@@ -131,7 +149,7 @@ public class CrateUtils {
                         }
 
                         loop = true;
-                        RudiCrates.getPlugin().getVersionUtils().updateTaskPeriod(task, delay);
+                        RudiCrates.getPlugin().getReflection().updateTaskPeriod(task, delay);
                     }
                 }, 5, delay);
             }
@@ -162,7 +180,7 @@ public class CrateUtils {
 
             inventory.setItem(left, RudiCrates.getPlugin().getItemManager().greenGlass);
             inventory.setItem(right, RudiCrates.getPlugin().getItemManager().greenGlass);
-            player.playSound(player.getLocation(), RudiCrates.getPlugin().getVersionUtils().blazeShoot(), 0.5F, 1.5F);
+            XSound.play(player, "ENTITY_BLAZE_SHOOT");
             left--;
             right++;
 
@@ -196,7 +214,7 @@ public class CrateUtils {
         }
 
         final FileConfiguration crateConfig = YamlConfiguration.loadConfiguration(crate.getFile());
-        final Map<ItemStack, Double[]> chances = Crate.getMap().get(crate.getName());
+        final Map<ItemStack, Double[]> chances = Crate.getCrateItemCache().get(crate.getName());
 
         if (crateConfig.getKeys(false).isEmpty()) {
             Language.send(player, "crate.empty");
@@ -222,7 +240,7 @@ public class CrateUtils {
         final boolean limited = crateConfig.get(id + ".limited") != null;
 
         if (item.isSimilar(RudiCrates.getPlugin().getItemManager().error)) {
-            Language.send(player, "crate.opening_cancelled", "%id%", String.valueOf(id));
+            Language.send(player, "crate.opening_cancelled");
             return;
         }
 
@@ -232,6 +250,7 @@ public class CrateUtils {
         if (animation) {
             openDelay = 215;
             this.animation(player, crate, id);
+            player.setInvulnerable(true);
         }
 
         Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> {
@@ -260,7 +279,7 @@ public class CrateUtils {
                 if (RudiCrates.getPlugin().getConfig().getDouble("pull_events.limited") >= chance) {
                     for (final Player players : Bukkit.getOnlinePlayers()) {
                         players.spigot().sendMessage(RudiCrates.getPlugin().getTranslationUtils().getWinMessage(TranslationUtils.MessageType.BROADCAST_LIMITED, display, amount, chance, player.getName(), crate.getDisplayname(), limit));
-                        players.playSound(players.getLocation(), RudiCrates.getPlugin().getVersionUtils().pling(), 1.0F, 1.0F);
+                        XSound.play(players, "BLOCK_NOTE_BLOCK_PLING");
                     }
 
                 } else {
@@ -272,7 +291,7 @@ public class CrateUtils {
                         crateConfig.set(String.valueOf(id), null);
                     }
 
-                    Crate.getMap().get(crate.getName()).remove(item);
+                    Crate.getCrateItemCache().get(crate.getName()).remove(item);
                 }
 
                 try {
@@ -281,7 +300,7 @@ public class CrateUtils {
                     exception.printStackTrace();
                 }
 
-                Crate.reloadCrateMaps();
+                Crate.reloadCrateMaps(crate);
                 this.loadChancesResult();
                 RudiCrates.getPlugin().getInventoryUtils().loadPreviewInventories();
             }
@@ -298,7 +317,8 @@ public class CrateUtils {
             if (!animation) {
                 Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () -> RudiCrates.getPlugin().getInventoryUtils().openCrateMenu(player), 2);
             }
-
+            
+            player.setInvulnerable(false);
         }, openDelay);
     }
 

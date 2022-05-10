@@ -1,11 +1,13 @@
 package de.laparudi.rudicrates.listeners;
 
+import com.cryptomorin.xseries.XSound;
 import de.laparudi.rudicrates.RudiCrates;
 import de.laparudi.rudicrates.crate.CrateUtils;
 import de.laparudi.rudicrates.utils.LocationNameUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -27,7 +29,8 @@ public class CrateClickListener implements Listener {
         }
 
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if (event.getClickedBlock() == null || event.getClickedBlock().getType() != Material.CHEST) return;
+        final Block block = event.getClickedBlock();
+        if (block == null || !RudiCrates.getPlugin().getConfig().getStringList("available_crate_blocks").contains(block.getType().name())) return;
 
         final FileConfiguration locations = YamlConfiguration.loadConfiguration(RudiCrates.getPlugin().getLocationsFile());
         final List<String> list = locations.getStringList("locations");
@@ -40,10 +43,11 @@ public class CrateClickListener implements Listener {
         event.setCancelled(true);
         if (CrateUtils.inCrateMenu.containsKey(player.getUniqueId())) return;
 
-        RudiCrates.getPlugin().getVersionUtils().openAnimation(player, location);
+        RudiCrates.getPlugin().getReflection().sendPacket(player, location.getBlockX(), location.getBlockY(), location.getBlockZ(), true);
+        XSound.play(player, "ENTITY_ILLUSIONER_MIRROR_MOVE");
         CrateUtils.inCrateMenu.put(player.getUniqueId(), location);
         
         Bukkit.getScheduler().runTaskLater(RudiCrates.getPlugin(), () ->
-                RudiCrates.getPlugin().getInventoryUtils().openCrateMenu(player), 10);
+                RudiCrates.getPlugin().getInventoryUtils().openCrateMenu(player), 12);
     }
 }

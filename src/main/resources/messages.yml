@@ -26,7 +26,8 @@ crate:
   incorrect_close_slot: '&cIncorrect slot-value at "items.close_slot" in the config. (Can be from 1-%highest%)'
   incorrect_chance_value: '&cIncorrect chance value for item %id% in %crate% crate.'
   incorrect_win_chances: '&cIncorrect win chances. Try to reload with /rc reload'
-  opening_cancelled: '&cOpening cancelled. &fIncorrect item (ID: %id%)'
+  opening_cancelled: '&cOpening cancelled. &fThis crate may contain duplicate items?'
+  duplicate_found: '&cThe crate (%crate%) contains a duplicated item (ID: %id%). With a duplicated item the crate cannot be opened.'
   no_remaining: '&fYou have no crates left.'
   no_remaining_addon: '&7(&cItem-Keys are currently disabled&7)'
   empty: '&fThis crate has no wins yet.'
@@ -51,6 +52,7 @@ crate:
 
 # %crate% = the displayname of the current crate
 inventories:
+  available_crate_blocks: 'Select a crate block'
   opening: '%crate% &8is being opened...'
   preview: '<#value#>'
 

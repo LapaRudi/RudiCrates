@@ -35,11 +35,7 @@ public class PreviewInventoryUtils {
         }
 
         for (final Inventory inventory : inventories) {
-            for (int i = 0; i < inventory.getSize(); i++) {
-                if (inventory.getItem(i) == null) {
-                    inventory.setItem(i, RudiCrates.getPlugin().getItemManager().blackGlass);
-                }
-            }
+            RudiCrates.getPlugin().getItemManager().fillInventory(inventory);
         }
     }
     

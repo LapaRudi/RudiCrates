@@ -17,7 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Arrays;
 import java.util.List;
 
-public class VersionUtils_1_8 implements VersionUtils {
+public class VersionUtils_1_9 implements VersionUtils {
     
     @Override
     public void formatConfig() {
@@ -27,18 +27,18 @@ public class VersionUtils_1_8 implements VersionUtils {
         RudiCrates.getPlugin().getFileUtils().setEmptyConfigValue("inventories.menu_title", "&0Crate Opening");
         RudiCrates.getPlugin().getFileUtils().setEmptyConfigValue("items.display.name", "&6Your win");
         RudiCrates.getPlugin().saveAndReloadConfig();
-        
-        RudiCrates.getPlugin().getFileUtils().setEmptyMessage("inventories.preview", "%crate% &8-> Preview");
-        RudiCrates.getPlugin().getFileUtils().setEmptyMessage("commands.rudicrates.header", "&6%version% &8- &6Commands");
-        RudiCrates.getPlugin().getFileUtils().setEmptyMessage("commands.rudicrates.footer", "&6%version% &8- &6Commands");
-        RudiCrates.getPlugin().getFileUtils().setEmptyMessage("items.crate_lore", Arrays.asList("&8-> &aLeft-click to open", "&8-> &aRight-click to show possible wins", "", "&8-> &aYou have &2%amount% &aleft", "", "&7Use &ashift+left-click &7to skip the animation"));
-        RudiCrates.getPlugin().getFileUtils().setEmptyMessage("commands.bindcommand.help", Arrays.asList("&7Placeholders:", "&c%crate% &7-> &fThe opened crate", "&c%player% &7-> &fThe player who opened the crate", "&c%chance% &7-> &fThe win chance of the won item", ""));
+
+        RudiCrates.getPlugin().getFileUtils().setEmptyMessage("inventories.preview", "%crate% &8→ Preview");
+        RudiCrates.getPlugin().getFileUtils().setEmptyMessage("commands.rudicrates.header", "&6%version% &8- &6Commands &c↓");
+        RudiCrates.getPlugin().getFileUtils().setEmptyMessage("commands.rudicrates.footer", "&6%version% &8- &6Commands &c↑");
+        RudiCrates.getPlugin().getFileUtils().setEmptyMessage("items.crate_lore", Arrays.asList("&8→ &aLeft-click to open", "&8→ &aRight-click to show possible wins", "", "&8→ &aYou have &2%amount% &aleft", "", "&7Use &ashift+left-click &7to skip the animation"));
+        RudiCrates.getPlugin().getFileUtils().setEmptyMessage("commands.bindcommand.help", Arrays.asList("&7Placeholders:", "&c%crate% &8→ &fThe opened crate", "&c%player% &8→ &fThe player who opened the crate", "&c%chance% &8→ &fThe win chance of the won item", ""));
         RudiCrates.getPlugin().reloadMessagesConfig();
     }
-
-    @Override @Deprecated
+    
+    @Override
     public ItemStack getPlayersItemInHand(final Player player) {
-        return player.getItemInHand();
+        return player.getInventory().getItemInMainHand();
     }
 
     @Override @Deprecated
@@ -58,7 +58,7 @@ public class VersionUtils_1_8 implements VersionUtils {
         return new ItemBuilder(item).setName(ChatColor.translateAlternateColorCodes('&', name))
                 .setDurability(durability).setLore(lore).invisibleEnchant(enchanted).toItem();
     }
-    
+
     @Override @Deprecated
     public BaseComponent[] builder(final String text, final String hoverText, final String displayText) {
         return new ComponentBuilder(Language.getPrefix()).append(text).append(" ")

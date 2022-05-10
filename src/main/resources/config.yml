@@ -71,6 +71,11 @@ items:
     material: 'HOPPER'
     enchant: true
 
+available_crate_blocks:
+  - 'CHEST'
+  - 'ENDER_CHEST'
+  - 'BLACK_SHULKER_BOX'
+
 # Removes limited items automatically from the crate, when the limitation is reached.
 remove_limited_items: false
 

@@ -133,7 +133,7 @@ public class BindCommandCommand implements CommandExecutor, TabCompleter {
         if (!sender.hasPermission("rudicrates.bindcommand")) return Collections.emptyList();
         final List<String> complete = new ArrayList<>();
         final List<String> bindArgs = Arrays.asList("add", "remove", "info");
-        final FileConfiguration config = Crate.getCrateConfigMap().get(args[0]);
+        final FileConfiguration config = Crate.getCrateConfigCache().get(args[0]);
 
         switch (args.length) {
             case 1:

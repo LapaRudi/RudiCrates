@@ -23,7 +23,7 @@ public class ConfigUpdater {
 
     private static void sendFeedback(final String configName, final String key, final boolean add) {
         final String action = add ? "added" : "removed";
-        
+
         if (configName.equals("config.yml")) {
             Language.send(Bukkit.getConsoleSender(), "updater.config." + action, "%option%", key);
 
@@ -31,28 +31,28 @@ public class ConfigUpdater {
             Language.send(Bukkit.getConsoleSender(), "updater.messages." + action, "%message%", key);
         }
     }
-    
+
     public static void update(final Plugin plugin, final String resourceName, final File toUpdate) {
         try {
             if (!toUpdate.exists()) return;
             final InputStream inputStream = RudiCrates.getPlugin().getResource(resourceName);
             if (inputStream == null) return;
-            
+
             final FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             final FileConfiguration currentConfig = YamlConfiguration.loadConfiguration(toUpdate);
-            
+
             defaultConfig.getKeys(true).forEach(key -> {
-                if (StringUtils.startsWithAny(key, IGNORED.toArray(String[]::new))) return;
+                if (StringUtils.startsWithAny(key, IGNORED.toArray(new String[0]))) return;
                 if (key.contains(".durability") || currentConfig.getKeys(true).contains(key)) return;
                 sendFeedback(resourceName, key, true);
             });
-            
+
             currentConfig.getKeys(true).forEach(key -> {
-                if (StringUtils.startsWithAny(key, IGNORED.toArray(String[]::new))) return;
+                if (StringUtils.startsWithAny(key, IGNORED.toArray(new String[0]))) return;
                 if (key.contains(".durability") || defaultConfig.getKeys(true).contains(key)) return;
                 sendFeedback(resourceName, key, false);
             });
-            
+
             final Map<String, String> comments = parseComments(plugin, resourceName, defaultConfig);
             final Map<String, String> ignoredSectionsValues = parseIgnoredSections(toUpdate, currentConfig, comments);
 
@@ -60,12 +60,12 @@ public class ConfigUpdater {
             final StringWriter writer = new StringWriter();
             write(defaultConfig, currentConfig, new BufferedWriter(writer), comments, ignoredSectionsValues);
             final String value = writer.toString(); // config contents
-            
+
             final Path toUpdatePath = toUpdate.toPath();
-            if (!value.equals(Files.readString(toUpdatePath))) { // if updated contents are not the same as current file contents, update
+            if (!value.equals(new String(Files.readAllBytes(toUpdatePath)))) { // if updated contents are not the same as current file contents, update
                 Files.write(toUpdatePath, value.getBytes(StandardCharsets.UTF_8));
             }
-            
+
         } catch (final IOException exception) {
             exception.printStackTrace();
         }
@@ -73,22 +73,22 @@ public class ConfigUpdater {
 
     private static void write(final FileConfiguration defaultConfig, final FileConfiguration currentConfig, final BufferedWriter writer,
                               final Map<String, String> comments, final Map<String, String> ignoredValues) throws IOException {
-        
+
         //Used for converting objects to yaml, then cleared
         final FileConfiguration parserConfig = new YamlConfiguration();
-        
+
         keyLoop: for (final String fullKey : defaultConfig.getKeys(true)) {
             final String indents = KeyBuilder.getIndents(fullKey, SEPARATOR);
 
             if (ignoredValues.isEmpty()) {
                 writeCommentIfExists(comments, writer, fullKey, indents);
-                
+
             } else {
                 for (final Map.Entry<String, String> entry : ignoredValues.entrySet()) {
                     if (entry.getKey().equals(fullKey)) {
                         writer.write(ignoredValues.get(fullKey) + "\n");
                         continue keyLoop;
-                        
+
                     } else if (KeyBuilder.isSubKeyOf(entry.getKey(), fullKey, SEPARATOR)) {
                         continue keyLoop;
                     }
@@ -119,7 +119,7 @@ public class ConfigUpdater {
             parserConfig.set(trailingKey, currentValue);
             String yaml = parserConfig.saveToString();
             yaml = yaml.substring(0, yaml.length() - 1).replace("\n", "\n" + indents);
-            
+
             final String toWrite = indents + yaml + "\n";
             parserConfig.set(trailingKey, null);
             writer.write(toWrite);
@@ -173,7 +173,7 @@ public class ConfigUpdater {
     }
 
     private static Map<String, String> parseIgnoredSections(final File toUpdate, final FileConfiguration currentConfig, final Map<String, String> comments) throws IOException {
-        try (final BufferedReader reader = new BufferedReader(new FileReader(toUpdate, StandardCharsets.UTF_8))) {
+        try (final BufferedReader reader = new BufferedReader(new FileReader(toUpdate))) {
             final Map<String, String> ignoredSectionsValues = new LinkedHashMap<>(IGNORED.size());
             final KeyBuilder keyBuilder = new KeyBuilder(currentConfig, SEPARATOR);
             final StringBuilder valueBuilder = new StringBuilder();

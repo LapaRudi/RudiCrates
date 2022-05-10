@@ -93,7 +93,7 @@ public class SetLimitedCommand implements CommandExecutor, TabCompleter {
             return complete;
         
         } else if (args.length == 2) {
-            final FileConfiguration config = Crate.getCrateConfigMap().get(args[0]);
+            final FileConfiguration config = Crate.getCrateConfigCache().get(args[0]);
             if (config == null) return Collections.emptyList();
             StringUtil.copyPartialMatches(args[1], config.getKeys(false), complete);
             return complete;

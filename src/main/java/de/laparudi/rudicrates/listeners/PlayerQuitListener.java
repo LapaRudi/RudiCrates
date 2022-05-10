@@ -1,6 +1,7 @@
 package de.laparudi.rudicrates.listeners;
 
 import de.laparudi.rudicrates.RudiCrates;
+import de.laparudi.rudicrates.utils.version.Reflection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,6 +15,7 @@ public class PlayerQuitListener implements Listener {
     @EventHandler
     public void onQuit(final PlayerQuitEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
+        Reflection.getConnections().remove(uuid);
         if (!RudiCrates.getPlugin().getDataUtils().playerExists(uuid)) return;
         
         final File playerFile = RudiCrates.getPlugin().getDataUtils().getPlayerFile(uuid);
