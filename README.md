@@ -11,7 +11,7 @@ RudiCrates Crate-Opening
 - Item names in the win message are translated into client language
 - Keys are stored in a MySQL database or .yml files
 - All messages customizable
-- Support for 1.8.8 - 1.18.2 (except 1.12.x and 1.14.x)
+- Support for 1.8.8 - 1.18.2 (some versions below 1.15 might not work, I recommend to use 1.16+)
 
 Soon:
 - More crate animations
